@@ -1,0 +1,5 @@
+.env
+prompt_tool.db
+__pycache__/
+uploads/
+*.pyc

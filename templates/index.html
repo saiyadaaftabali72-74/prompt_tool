@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prompt Engineer Tool</title>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --panel: #ffffff;
+      --panel-2: #f8fafc;
+      --text: #0f172a;
+      --sub: #475569;
+      --border: #d1d5db;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --danger: #dc2626;
+    }
+    body.dark {
+      --bg: #0f172a;
+      --panel: rgba(255,255,255,0.08);
+      --panel-2: rgba(15,23,42,0.9);
+      --text: #ffffff;
+      --sub: #cbd5e1;
+      --border: #334155;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+      transition: .2s ease;
+    }
+    .container {
+      max-width: 1050px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    h1, h2, h3 { margin-top: 0; }
+    .topbar, .authbar, .btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .topbar { justify-content: space-between; margin-bottom: 16px; }
+    .authbar { margin-bottom: 16px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--sub);
+      font-weight: 700;
+    }
+    input, select, textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 12px;
+      font-size: 15px;
+    }
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+      margin-bottom: 12px;
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 16px;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+      font-size: 14px;
+    }
+    button:hover { background: var(--primary-hover); }
+    .danger { background: var(--danger); }
+    .secondary { background: #64748b; }
+    .box, .card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 12px;
+    }
+    .output {
+      white-space: pre-wrap;
+      line-height: 1.6;
+      min-height: 60px;
+    }
+    .small { color: var(--sub); font-size: 13px; }
+    .sections {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .mini-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .loading {
+      display: none;
+      color: #eab308;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    @media (max-width: 900px) {
+      .grid, .sections { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="light">
+  <div class="container">
+    <div class="topbar">
+      <h1>Prompt Engineer Tool</h1>
+      <button type="button" class="secondary" id="themeBtn">Dark / Light</button>
+    </div>
+
+    <div class="authbar">
+      <input id="username" placeholder="Username" />
+      <input id="password" type="password" placeholder="Password" />
+      <button type="button" id="signupBtn">Signup</button>
+      <button type="button" id="loginBtn">Login</button>
+      <button type="button" class="secondary" id="logoutBtn">Logout</button>
+      <span id="loginStatus" class="small">Checking login...</span>
+    </div>
+
+    <div class="grid">
+      <div>
+        <label for="mode">Mode</label>
+        <select id="mode">
+          <option>Image Prompt</option>
+          <option>Video Prompt</option>
+          <option>Logo Prompt</option>
+          <option>Product Ad Prompt</option>
+          <option>Thumbnail Prompt</option>
+        </select>
+      </div>
+      <div>
+        <label for="style">Style</label>
+        <select id="style">
+          <option>Cinematic</option>
+          <option>Realistic</option>
+          <option>Luxury</option>
+          <option>Fantasy</option>
+          <option>Anime</option>
+          <option>Fashion</option>
+          <option>Horror</option>
+          <option>Advertising</option>
+        </select>
+      </div>
+      <div>
+        <label for="modelLabel">Target Model Style</label>
+        <select id="modelLabel">
+          <option>Midjourney</option>
+          <option>Flux</option>
+          <option>SDXL</option>
+        </select>
+      </div>
+    </div>
+
+    <label for="ideaText">Enter your idea</label>
+    <textarea id="ideaText" placeholder="Example: Luxury Car"></textarea>
+
+    <label for="imageFile">Upload image for image-to-prompt</label>
+    <input type="file" id="imageFile" accept=".png,.jpg,.jpeg,.webp" />
+
+    <div class="loading" id="loadingText">Working...</div>
+
+    <div class="btns">
+      <button type="button" id="generateBtn">Generate Perfect Prompt</button>
+      <button type="button" id="shortenBtn">Prompt Shorten</button>
+      <button type="button" id="improveBtn">Prompt Improve More</button>
+      <button type="button" id="imageBtn">Image Upload → Prompt</button>
+      <button type="button" class="secondary" id="copyPromptBtn">Copy Prompt</button>
+      <button type="button" class="secondary" id="copyNegativeBtn">Copy Negative Prompt</button>
+      <button type="button" class="secondary" id="downloadBtn">Download TXT</button>
+      <button type="button" class="secondary" id="saveBtn">Save Prompt</button>
+      <button type="button" class="secondary" id="clearBtn">Clear</button>
+    </div>
+
+    <div class="box">
+      <h3>Generated Prompt</h3>
+      <div id="promptBox" class="output">Your generated prompt will appear here.</div>
+    </div>
+
+    <div class="box">
+      <h3>Negative Prompt</h3>
+      <div id="negativeBox" class="output">Your negative prompt will appear here.</div>
+    </div>
+
+    <div class="sections">
+      <div>
+        <h2>History</h2>
+        <div id="historyList"></div>
+        <button type="button" class="danger" id="clearHistoryBtn">Delete History</button>
+      </div>
+
+      <div>
+        <h2>Saved Prompts</h2>
+        <input id="savedSearch" placeholder="Search saved prompts..." />
+        <div id="savedList" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let promptHistory = [];
+
+    const $ = (id) => document.getElementById(id);
+
+    function getFormData() {
+      return {
+        text: $("ideaText").value.trim(),
+        mode: $("mode").value,
+        style: $("style").value,
+        model_label: $("modelLabel").value
+      };
+    }
+
+    function setLoading(isLoading) {
+      $("loadingText").style.display = isLoading ? "block" : "none";
+    }
+
+    function setOutputs(prompt, negative) {
+      $("promptBox").innerText = prompt || "No prompt generated.";
+      $("negativeBox").innerText = negative || "No negative prompt generated.";
+    }
+
+    function addToHistory(item) {
+      promptHistory.unshift(item);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      $("historyList").innerHTML = "";
+      for (let i = 0; i < promptHistory.length; i++) {
+        const item = promptHistory[i];
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <strong>Idea:</strong> ${escapeHtml(item.idea)}<br>
+          <strong>Mode:</strong> ${escapeHtml(item.mode)}<br>
+          <strong>Style:</strong> ${escapeHtml(item.style)}<br>
+          <strong>Model:</strong> ${escapeHtml(item.model_label)}<br><br>
+          <strong>Prompt:</strong><br>${escapeHtml(item.prompt)}<br><br>
+          <strong>Negative Prompt:</strong><br>${escapeHtml(item.negative_prompt)}
+          <div class="mini-actions">
+            <button type="button" class="danger" onclick="deleteHistoryItem(${i})">Delete</button>
+          </div>
+        `;
+        $("historyList").appendChild(div);
+      }
+    }
+
+    function deleteHistoryItem(index) {
+      promptHistory.splice(index, 1);
+      renderHistory();
+    }
+
+    function clearHistory() {
+      promptHistory = [];
+      renderHistory();
+    }
+
+    async function callProcess(action) {
+      const form = getFormData();
+      if (!form.text) {
+        alert("Please enter an idea first.");
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const res = await fetch("/api/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...form, action })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Request failed");
+
+        setOutputs(data.prompt, data.negative_prompt);
+        addToHistory({
+          idea: form.text,
+          mode: form.mode,
+          style: form.style,
+          model_label: form.model_label,
+          prompt: data.prompt,
+          negative_prompt: data.negative_prompt
+        });
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function imageToPrompt() {
+      const file = $("imageFile").files[0];
+      if (!file) {
+        alert("Please select an image first.");
+        return;
+      }
+
+      const form = getFormData();
+      const fd = new FormData();
+      fd.append("image", file);
+      fd.append("mode", form.mode);
+      fd.append("style", form.style);
+      fd.append("model_label", form.model_label);
+
+      setLoading(true);
+      try {
+        const res = await fetch("/api/image-to-prompt", {
+          method: "POST",
+          body: fd
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Image request failed");
+
+        setOutputs(data.prompt, data.negative_prompt);
+        addToHistory({
+          idea: file.name,
+          mode: form.mode,
+          style: form.style,
+          model_label: form.model_label,
+          prompt: data.prompt,
+          negative_prompt: data.negative_prompt
+        });
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function signup() {
+      const username = $("username").value.trim();
+      const password = $("password").value.trim();
+
+      const res = await fetch("/api/signup", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      alert(data.message || data.error || "Signup done");
+    }
+
+    async function login() {
+      const username = $("username").value.trim();
+      const password = $("password").value.trim();
+
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Login failed");
+        return;
+      }
+
+      $("loginStatus").innerText = "Logged in as " + data.username;
+      await loadSavedPrompts();
+      alert(data.message);
+    }
+
+    async function logout() {
+      const res = await fetch("/api/logout", { method: "POST" });
+      const data = await res.json();
+      $("loginStatus").innerText = "Not logged in";
+      $("savedList").innerHTML = "";
+      alert(data.message);
+    }
+
+    async function checkLogin() {
+      const res = await fetch("/api/me");
+      const data = await res.json();
+      $("loginStatus").innerText = data.logged_in
+        ? ("Logged in as " + data.username)
+        : "Not logged in";
+
+      if (data.logged_in) {
+        loadSavedPrompts();
+      }
+    }
+
+    async function savePrompt() {
+      const form = getFormData();
+      const prompt = $("promptBox").innerText.trim();
+      const negative_prompt = $("negativeBox").innerText.trim();
+
+      if (!prompt || prompt === "Your generated prompt will appear here.") {
+        alert("Generate a prompt first.");
+        return;
+      }
+
+      const res = await fetch("/api/save-prompt", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          idea: form.text,
+          mode: form.mode,
+          style: form.style,
+          model_label: form.model_label,
+          prompt,
+          negative_prompt
+        })
+      });
+
+      const data = await res.json();
+      alert(data.message || data.error);
+      if (res.ok) loadSavedPrompts();
+    }
+
+    async function loadSavedPrompts() {
+      const q = $("savedSearch").value.trim();
+      const res = await fetch("/api/saved-prompts?q=" + encodeURIComponent(q));
+      if (!res.ok) {
+        $("savedList").innerHTML = "<div class='small'>Login to see saved prompts.</div>";
+        return;
+      }
+
+      const items = await res.json();
+      $("savedList").innerHTML = "";
+
+      if (!items.length) {
+        $("savedList").innerHTML = "<div class='small'>No saved prompts found.</div>";
+        return;
+      }
+
+      items.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <strong>Idea:</strong> ${escapeHtml(item.idea)}<br>
+          <strong>Mode:</strong> ${escapeHtml(item.mode)}<br>
+          <strong>Style:</strong> ${escapeHtml(item.style)}<br>
+          <strong>Model:</strong> ${escapeHtml(item.model_label)}<br>
+          <strong>Created:</strong> ${escapeHtml(item.created_at)}<br><br>
+          <strong>Prompt:</strong><br>${escapeHtml(item.prompt)}<br><br>
+          <strong>Negative Prompt:</strong><br>${escapeHtml(item.negative_prompt)}
+          <div class="mini-actions">
+            <button type="button" class="danger" onclick="deleteSavedPrompt(${item.id})">Delete Saved</button>
+          </div>
+        `;
+        $("savedList").appendChild(div);
+      });
+    }
+
+    async function deleteSavedPrompt(id) {
+      const res = await fetch("/api/saved-prompts/" + id, { method: "DELETE" });
+      const data = await res.json();
+      alert(data.message || data.error);
+      if (res.ok) loadSavedPrompts();
+    }
+
+    function copyPrompt() {
+      navigator.clipboard.writeText($("promptBox").innerText)
+        .then(() => alert("Prompt copied"))
+        .catch(() => alert("Copy failed"));
+    }
+
+    function copyNegativePrompt() {
+      navigator.clipboard.writeText($("negativeBox").innerText)
+        .then(() => alert("Negative prompt copied"))
+        .catch(() => alert("Copy failed"));
+    }
+
+    function downloadTxt() {
+      const content =
+        "Generated Prompt:\n\n" + $("promptBox").innerText +
+        "\n\nNegative Prompt:\n\n" + $("negativeBox").innerText;
+
+      const blob = new Blob([content], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "prompt.txt";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function clearAll() {
+      $("ideaText").value = "";
+      $("imageFile").value = "";
+      setOutputs("Your generated prompt will appear here.", "Your negative prompt will appear here.");
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    $("generateBtn").addEventListener("click", () => callProcess("generate"));
+    $("shortenBtn").addEventListener("click", () => callProcess("shorten"));
+    $("improveBtn").addEventListener("click", () => callProcess("improve_more"));
+    $("imageBtn").addEventListener("click", imageToPrompt);
+    $("copyPromptBtn").addEventListener("click", copyPrompt);
+    $("copyNegativeBtn").addEventListener("click", copyNegativePrompt);
+    $("downloadBtn").addEventListener("click", downloadTxt);
+    $("saveBtn").addEventListener("click", savePrompt);
+    $("clearBtn").addEventListener("click", clearAll);
+    $("themeBtn").addEventListener("click", toggleTheme);
+    $("signupBtn").addEventListener("click", signup);
+    $("loginBtn").addEventListener("click", login);
+    $("logoutBtn").addEventListener("click", logout);
+    $("clearHistoryBtn").addEventListener("click", clearHistory);
+    $("savedSearch").addEventListener("input", loadSavedPrompts);
+
+    checkLogin();
+  </script>
+</body>
+</html>
