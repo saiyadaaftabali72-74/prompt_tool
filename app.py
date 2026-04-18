@@ -12,12 +12,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from openai import OpenAI
 
-# -----------------------------
 # ENV + APP SETUP
-# -----------------------------
-load_dotenv()  # optional (local ke liye)
+load_dotenv()
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+BASE_DIR = os.path.abspath(os.path.dirname(_file_))
 DB_PATH = os.path.join(BASE_DIR, "prompt_tool.db")
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 DOWNLOAD_FILE = os.path.join(BASE_DIR, "prompt_result.txt")
@@ -26,10 +24,10 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-app = Flask(__name__)
+app = Flask(_name_)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "change_me_now_123")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
 TEXT_MODEL = os.environ.get("TEXT_MODEL", "openrouter/auto").strip()
@@ -37,10 +35,8 @@ VISION_MODEL = os.environ.get("VISION_MODEL", "openrouter/auto").strip()
 SITE_URL = os.environ.get("SITE_URL", "https://prompt-tool-fali.onrender.com").strip()
 SITE_NAME = os.environ.get("SITE_NAME", "Prompt Engineer Tool").strip()
 
-print("ENV PATH:", ENV_PATH)
 print("OPENROUTER KEY FOUND:", bool(OPENROUTER_API_KEY))
 print("OPENROUTER KEY PREFIX:", OPENROUTER_API_KEY[:8] if OPENROUTER_API_KEY else "NONE")
-
 
 # -----------------------------
 # OPENROUTER CLIENT
