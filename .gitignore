@@ -1,5 +1,52 @@
+# Secrets
 .env
-prompt_tool.db
+.env.*
+!.env.example
+
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+
+# Flask / local app data
+instance/
+*.db
+*.sqlite
+*.sqlite3
 uploads/
-*.pyc
+logs/
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Build / cache
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Extra safety
+*.env
+*.key
+*.pem
+*.crt
+
+# Render / deployment
+.env.local
+.env.production
+
+# Python build
+*.egg-info/

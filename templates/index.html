@@ -6,540 +6,710 @@
   <title>Prompt Engineer Tool</title>
   <style>
     :root {
-      --bg: #f3f4f6;
-      --panel: #ffffff;
-      --panel-2: #f8fafc;
-      --text: #0f172a;
-      --sub: #475569;
-      --border: #d1d5db;
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
       --primary: #2563eb;
-      --primary-hover: #1d4ed8;
+      --primary-dark: #1d4ed8;
       --danger: #dc2626;
+      --border: #dbe3f0;
+      --shadow: 0 12px 28px rgba(0,0,0,0.08);
     }
+
     body.dark {
       --bg: #0f172a;
-      --panel: rgba(255,255,255,0.08);
-      --panel-2: rgba(15,23,42,0.9);
-      --text: #ffffff;
-      --sub: #cbd5e1;
-      --border: #334155;
+      --card: #111827;
+      --text: #f9fafb;
+      --muted: #9ca3af;
       --primary: #3b82f6;
-      --primary-hover: #2563eb;
+      --primary-dark: #2563eb;
       --danger: #ef4444;
+      --border: #334155;
+      --shadow: 0 12px 28px rgba(0,0,0,0.35);
     }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding: 24px;
-      transition: .2s ease;
+      font-family: Arial, sans-serif;
     }
+
     .container {
-      max-width: 1050px;
-      margin: 0 auto;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 22px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      max-width: 1180px;
+      margin: 24px auto;
+      padding: 16px;
     }
-    h1, h2, h3 { margin-top: 0; }
-    .topbar, .authbar, .btns {
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+
+    .header {
       display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .topbar { justify-content: space-between; margin-bottom: 16px; }
-    .authbar { margin-bottom: 16px; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    label {
-      display: block;
-      margin-bottom: 6px;
-      color: var(--sub);
-      font-weight: 700;
-    }
-    input, select, textarea {
-      width: 100%;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: var(--panel-2);
-      color: var(--text);
-      padding: 12px;
-      font-size: 15px;
-    }
-    textarea {
-      min-height: 150px;
-      resize: vertical;
-      margin-bottom: 12px;
-    }
-    button {
-      border: none;
-      border-radius: 12px;
-      padding: 11px 16px;
-      cursor: pointer;
-      background: var(--primary);
-      color: white;
-      font-size: 14px;
-    }
-    button:hover { background: var(--primary-hover); }
-    .danger { background: var(--danger); }
-    .secondary { background: #64748b; }
-    .box, .card {
-      background: var(--panel-2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-      margin-top: 12px;
-    }
-    .output {
-      white-space: pre-wrap;
-      line-height: 1.6;
-      min-height: 60px;
-    }
-    .small { color: var(--sub); font-size: 13px; }
-    .sections {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      justify-content: space-between;
+      align-items: flex-start;
       gap: 16px;
-      margin-top: 18px;
+      flex-wrap: wrap;
     }
-    .mini-actions {
+
+    .header-actions {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      margin-top: 10px;
+      justify-content: flex-end;
+      align-items: center;
     }
-    .loading {
-      display: none;
-      color: #eab308;
-      font-weight: bold;
-      margin: 10px 0;
+
+    h1, h2, h3 {
+      margin-top: 0;
     }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 18px;
+    }
+
     @media (max-width: 900px) {
-      .grid, .sections { grid-template-columns: 1fr; }
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      margin-top: 8px;
+      margin-bottom: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      outline: none;
+    }
+
+    textarea {
+      min-height: 210px;
+      resize: vertical;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      background: var(--primary);
+      color: white;
+      padding: 11px 16px;
+      cursor: pointer;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    button.danger {
+      background: var(--danger);
+    }
+
+    .result-box {
+      min-height: 150px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      white-space: pre-wrap;
+      background: rgba(127,127,127,0.05);
+    }
+
+    .prompt-item {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 12px;
+      background: rgba(127,127,127,0.03);
+    }
+
+    .badge {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .modal-wrap {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 9999;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 440px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .close-btn {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 700px) {
+      .split {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
-<body class="light">
+<body>
   <div class="container">
-    <div class="topbar">
-      <h1>Prompt Engineer Tool</h1>
-      <button type="button" class="secondary" id="themeBtn">Dark / Light</button>
-    </div>
+    <div class="card header">
+      <div>
+        <h1>Prompt Engineer Tool</h1>
+        <div class="muted">Idea → perfect prompt generator, multi-language support</div>
+      </div>
 
-    <div class="authbar">
-      <input id="username" placeholder="Username" />
-      <input id="password" type="password" placeholder="Password" />
-      <button type="button" id="signupBtn">Signup</button>
-      <button type="button" id="loginBtn">Login</button>
-      <button type="button" class="secondary" id="logoutBtn">Logout</button>
-      <span id="loginStatus" class="small">Checking login...</span>
+      <div class="header-actions">
+        <button type="button" onclick="toggleTheme()">Dark / Light</button>
+        <button type="button" id="loginTopBtn" onclick="openModal('loginModal')">Login</button>
+        <button type="button" id="signupTopBtn" onclick="openModal('signupModal')">Signup</button>
+        <button type="button" class="danger hidden" id="logoutTopBtn" onclick="logout()">Logout</button>
+        <span id="userBadge" class="badge">Not logged in</span>
+      </div>
     </div>
 
     <div class="grid">
-      <div>
-        <label for="mode">Mode</label>
-        <select id="mode">
-          <option>Image Prompt</option>
-          <option>Video Prompt</option>
-          <option>Logo Prompt</option>
-          <option>Product Ad Prompt</option>
-          <option>Thumbnail Prompt</option>
-        </select>
+      <div class="card">
+        <h2>Prompt Builder</h2>
+
+        <div class="split">
+          <div>
+            <label>Mode</label>
+            <select id="mode">
+              <option value="generate">Generate Perfect Prompt</option>
+              <option value="improve">Prompt Improve More</option>
+              <option value="shorten">Prompt Shorten</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Model</label>
+            <select id="modelName">
+              <option>Flux</option>
+              <option>Midjourney</option>
+              <option>SDXL</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="split">
+          <div>
+            <label>Visual Style</label>
+            <select id="styleName">
+              <option>Ultra-Realistic</option>
+              <option selected>Realistic</option>
+              <option>Animated</option>
+              <option>Cinematic</option>
+              <option>Fantasy</option>
+              <option>Anime</option>
+              <option>3D Render</option>
+              <option>Pixel Art</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Output Language</label>
+            <select id="outputLanguage">
+              <option selected>Auto</option>
+              <option>English</option>
+              <option>Hindi</option>
+              <option>Urdu</option>
+              <option>Arabic</option>
+              <option>Spanish</option>
+              <option>French</option>
+              <option>German</option>
+              <option>Portuguese</option>
+              <option>Russian</option>
+              <option>Japanese</option>
+              <option>Korean</option>
+              <option>Chinese</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Enter your idea</label>
+        <textarea id="idea" placeholder="Example: ultra-realistic luxury car in rainy night with cinematic lighting"></textarea>
+
+        <div class="toolbar">
+          <button type="button" onclick="processPrompt()">Generate</button>
+          <button type="button" onclick="savePrompt()">Save Prompt</button>
+          <button type="button" onclick="copyPrompt()">Copy Prompt</button>
+          <button type="button" onclick="downloadTxt()">Download TXT</button>
+          <button type="button" class="danger" onclick="clearPrompt()">Clear</button>
+        </div>
       </div>
+
       <div>
-        <label for="style">Style</label>
-        <select id="style">
-          <option>Cinematic</option>
-          <option>Realistic</option>
-          <option>Luxury</option>
-          <option>Fantasy</option>
-          <option>Anime</option>
-          <option>Fashion</option>
-          <option>Horror</option>
-          <option>Advertising</option>
-        </select>
-      </div>
-      <div>
-        <label for="modelLabel">Target Model Style</label>
-        <select id="modelLabel">
-          <option>Midjourney</option>
-          <option>Flux</option>
-          <option>SDXL</option>
-        </select>
+        <div class="card">
+          <h2>Generated Result</h2>
+          <div id="result" class="result-box">Your generated prompt will appear here.</div>
+
+          <h2 style="margin-top:18px;">Negative Prompt</h2>
+          <div id="negativeResult" class="result-box">Your negative prompt will appear here.</div>
+        </div>
+
+        <div class="card">
+          <h2>Image Upload → Prompt</h2>
+          <input type="file" id="imageFile" accept=".png,.jpg,.jpeg,.webp" />
+          <div class="toolbar">
+            <button type="button" onclick="imageToPrompt()">Generate From Image</button>
+            <button type="button" class="danger" onclick="deleteUploadedImage()">Delete Uploaded Image</button>
+          </div>
+          <div id="imageMessage" class="muted"></div>
+        </div>
       </div>
     </div>
 
-    <label for="ideaText">Enter your idea</label>
-    <textarea id="ideaText" placeholder="Example: Luxury Car"></textarea>
-
-    <label for="imageFile">Upload image for image-to-prompt</label>
-    <input type="file" id="imageFile" accept=".png,.jpg,.jpeg,.webp" />
-
-    <div class="loading" id="loadingText">Working...</div>
-
-    <div class="btns">
-      <button type="button" id="generateBtn">Generate Perfect Prompt</button>
-      <button type="button" id="shortenBtn">Prompt Shorten</button>
-      <button type="button" id="improveBtn">Prompt Improve More</button>
-      <button type="button" id="imageBtn">Image Upload → Prompt</button>
-      <button type="button" class="secondary" id="copyPromptBtn">Copy Prompt</button>
-      <button type="button" class="secondary" id="copyNegativeBtn">Copy Negative Prompt</button>
-      <button type="button" class="secondary" id="downloadBtn">Download TXT</button>
-      <button type="button" class="secondary" id="saveBtn">Save Prompt</button>
-      <button type="button" class="secondary" id="clearBtn">Clear</button>
+    <div class="card">
+      <div class="header" style="margin-bottom: 12px;">
+        <div>
+          <h2>Saved Prompt History</h2>
+          <div class="muted">Search, reuse, or delete your saved prompts</div>
+        </div>
+        <div class="header-actions">
+          <input id="searchInput" placeholder="Search in saved prompts..." oninput="loadSavedPrompts()" style="min-width:260px; margin:0;" />
+          <button type="button" class="danger" onclick="deleteAllHistory()">Delete All History</button>
+        </div>
+      </div>
+      <div id="savedPrompts"></div>
     </div>
+  </div>
 
-    <div class="box">
-      <h3>Generated Prompt</h3>
-      <div id="promptBox" class="output">Your generated prompt will appear here.</div>
-    </div>
-
-    <div class="box">
-      <h3>Negative Prompt</h3>
-      <div id="negativeBox" class="output">Your negative prompt will appear here.</div>
-    </div>
-
-    <div class="sections">
-      <div>
-        <h2>History</h2>
-        <div id="historyList"></div>
-        <button type="button" class="danger" id="clearHistoryBtn">Delete History</button>
+  <div class="modal-wrap" id="signupModalWrap">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Signup</h3>
+        <button type="button" class="close-btn" onclick="closeModal('signupModal')">X</button>
       </div>
 
-      <div>
-        <h2>Saved Prompts</h2>
-        <input id="savedSearch" placeholder="Search saved prompts..." />
-        <div id="savedList" style="margin-top:10px;"></div>
+      <input id="signupUsername" placeholder="Username" />
+      <input id="signupEmail" placeholder="Email" />
+      <input id="signupPassword" type="password" placeholder="Password" />
+      <div class="toolbar">
+        <button type="button" onclick="signup()">Create Account</button>
       </div>
+      <div id="signupMessage" class="muted"></div>
+    </div>
+  </div>
+
+  <div class="modal-wrap" id="loginModalWrap">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Login</h3>
+        <button type="button" class="close-btn" onclick="closeModal('loginModal')">X</button>
+      </div>
+
+      <input id="loginEmail" placeholder="Email" />
+      <input id="loginPassword" type="password" placeholder="Password" />
+      <div class="toolbar">
+        <button type="button" onclick="login()">Login</button>
+      </div>
+      <div id="loginMessage" class="muted"></div>
     </div>
   </div>
 
   <script>
-    let promptHistory = [];
+    let currentUser = null;
+    let lastUploadedFilename = "";
 
-    const $ = (id) => document.getElementById(id);
-
-    function getFormData() {
-      return {
-        text: $("ideaText").value.trim(),
-        mode: $("mode").value,
-        style: $("style").value,
-        model_label: $("modelLabel").value
-      };
+    async function fetchJSON(url, options = {}) {
+      const response = await fetch(url, options);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Something went wrong");
+      return data;
     }
 
-    function setLoading(isLoading) {
-      $("loadingText").style.display = isLoading ? "block" : "none";
+    function setText(id, text) {
+      document.getElementById(id).innerText = text;
     }
 
-    function setOutputs(prompt, negative) {
-      $("promptBox").innerText = prompt || "No prompt generated.";
-      $("negativeBox").innerText = negative || "No negative prompt generated.";
+    function openModal(name) {
+      document.getElementById(name + "Wrap").style.display = "flex";
     }
 
-    function addToHistory(item) {
-      promptHistory.unshift(item);
-      renderHistory();
-    }
-
-    function renderHistory() {
-      $("historyList").innerHTML = "";
-      for (let i = 0; i < promptHistory.length; i++) {
-        const item = promptHistory[i];
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <strong>Idea:</strong> ${escapeHtml(item.idea)}<br>
-          <strong>Mode:</strong> ${escapeHtml(item.mode)}<br>
-          <strong>Style:</strong> ${escapeHtml(item.style)}<br>
-          <strong>Model:</strong> ${escapeHtml(item.model_label)}<br><br>
-          <strong>Prompt:</strong><br>${escapeHtml(item.prompt)}<br><br>
-          <strong>Negative Prompt:</strong><br>${escapeHtml(item.negative_prompt)}
-          <div class="mini-actions">
-            <button type="button" class="danger" onclick="deleteHistoryItem(${i})">Delete</button>
-          </div>
-        `;
-        $("historyList").appendChild(div);
-      }
-    }
-
-    function deleteHistoryItem(index) {
-      promptHistory.splice(index, 1);
-      renderHistory();
-    }
-
-    function clearHistory() {
-      promptHistory = [];
-      renderHistory();
-    }
-
-    async function callProcess(action) {
-      const form = getFormData();
-      if (!form.text) {
-        alert("Please enter an idea first.");
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const res = await fetch("/api/process", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...form, action })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Request failed");
-
-        setOutputs(data.prompt, data.negative_prompt);
-        addToHistory({
-          idea: form.text,
-          mode: form.mode,
-          style: form.style,
-          model_label: form.model_label,
-          prompt: data.prompt,
-          negative_prompt: data.negative_prompt
-        });
-      } catch (err) {
-        alert(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    async function imageToPrompt() {
-      const file = $("imageFile").files[0];
-      if (!file) {
-        alert("Please select an image first.");
-        return;
-      }
-
-      const form = getFormData();
-      const fd = new FormData();
-      fd.append("image", file);
-      fd.append("mode", form.mode);
-      fd.append("style", form.style);
-      fd.append("model_label", form.model_label);
-
-      setLoading(true);
-      try {
-        const res = await fetch("/api/image-to-prompt", {
-          method: "POST",
-          body: fd
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Image request failed");
-
-        setOutputs(data.prompt, data.negative_prompt);
-        addToHistory({
-          idea: file.name,
-          mode: form.mode,
-          style: form.style,
-          model_label: form.model_label,
-          prompt: data.prompt,
-          negative_prompt: data.negative_prompt
-        });
-      } catch (err) {
-        alert(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    async function signup() {
-      const username = $("username").value.trim();
-      const password = $("password").value.trim();
-
-      const res = await fetch("/api/signup", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
-      alert(data.message || data.error || "Signup done");
-    }
-
-    async function login() {
-      const username = $("username").value.trim();
-      const password = $("password").value.trim();
-
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ username, password })
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.error || "Login failed");
-        return;
-      }
-
-      $("loginStatus").innerText = "Logged in as " + data.username;
-      await loadSavedPrompts();
-      alert(data.message);
-    }
-
-    async function logout() {
-      const res = await fetch("/api/logout", { method: "POST" });
-      const data = await res.json();
-      $("loginStatus").innerText = "Not logged in";
-      $("savedList").innerHTML = "";
-      alert(data.message);
-    }
-
-    async function checkLogin() {
-      const res = await fetch("/api/me");
-      const data = await res.json();
-      $("loginStatus").innerText = data.logged_in
-        ? ("Logged in as " + data.username)
-        : "Not logged in";
-
-      if (data.logged_in) {
-        loadSavedPrompts();
-      }
-    }
-
-    async function savePrompt() {
-      const form = getFormData();
-      const prompt = $("promptBox").innerText.trim();
-      const negative_prompt = $("negativeBox").innerText.trim();
-
-      if (!prompt || prompt === "Your generated prompt will appear here.") {
-        alert("Generate a prompt first.");
-        return;
-      }
-
-      const res = await fetch("/api/save-prompt", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-          idea: form.text,
-          mode: form.mode,
-          style: form.style,
-          model_label: form.model_label,
-          prompt,
-          negative_prompt
-        })
-      });
-
-      const data = await res.json();
-      alert(data.message || data.error);
-      if (res.ok) loadSavedPrompts();
-    }
-
-    async function loadSavedPrompts() {
-      const q = $("savedSearch").value.trim();
-      const res = await fetch("/api/saved-prompts?q=" + encodeURIComponent(q));
-      if (!res.ok) {
-        $("savedList").innerHTML = "<div class='small'>Login to see saved prompts.</div>";
-        return;
-      }
-
-      const items = await res.json();
-      $("savedList").innerHTML = "";
-
-      if (!items.length) {
-        $("savedList").innerHTML = "<div class='small'>No saved prompts found.</div>";
-        return;
-      }
-
-      items.forEach((item) => {
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `
-          <strong>Idea:</strong> ${escapeHtml(item.idea)}<br>
-          <strong>Mode:</strong> ${escapeHtml(item.mode)}<br>
-          <strong>Style:</strong> ${escapeHtml(item.style)}<br>
-          <strong>Model:</strong> ${escapeHtml(item.model_label)}<br>
-          <strong>Created:</strong> ${escapeHtml(item.created_at)}<br><br>
-          <strong>Prompt:</strong><br>${escapeHtml(item.prompt)}<br><br>
-          <strong>Negative Prompt:</strong><br>${escapeHtml(item.negative_prompt)}
-          <div class="mini-actions">
-            <button type="button" class="danger" onclick="deleteSavedPrompt(${item.id})">Delete Saved</button>
-          </div>
-        `;
-        $("savedList").appendChild(div);
-      });
-    }
-
-    async function deleteSavedPrompt(id) {
-      const res = await fetch("/api/saved-prompts/" + id, { method: "DELETE" });
-      const data = await res.json();
-      alert(data.message || data.error);
-      if (res.ok) loadSavedPrompts();
-    }
-
-    function copyPrompt() {
-      navigator.clipboard.writeText($("promptBox").innerText)
-        .then(() => alert("Prompt copied"))
-        .catch(() => alert("Copy failed"));
-    }
-
-    function copyNegativePrompt() {
-      navigator.clipboard.writeText($("negativeBox").innerText)
-        .then(() => alert("Negative prompt copied"))
-        .catch(() => alert("Copy failed"));
-    }
-
-    function downloadTxt() {
-      const content =
-        "Generated Prompt:\n\n" + $("promptBox").innerText +
-        "\n\nNegative Prompt:\n\n" + $("negativeBox").innerText;
-
-      const blob = new Blob([content], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "prompt.txt";
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function clearAll() {
-      $("ideaText").value = "";
-      $("imageFile").value = "";
-      setOutputs("Your generated prompt will appear here.", "Your negative prompt will appear here.");
+    function closeModal(name) {
+      document.getElementById(name + "Wrap").style.display = "none";
     }
 
     function toggleTheme() {
       document.body.classList.toggle("dark");
+      localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+    }
+
+    function loadTheme() {
+      const theme = localStorage.getItem("theme");
+      if (theme === "dark") {
+        document.body.classList.add("dark");
+      }
+    }
+
+    function copyPrompt() {
+      const text =
+        "Positive Prompt:\n" +
+        document.getElementById("result").innerText +
+        "\n\nNegative Prompt:\n" +
+        document.getElementById("negativeResult").innerText;
+
+      navigator.clipboard.writeText(text);
+      alert("Prompt copied.");
+    }
+
+    function clearPrompt() {
+      document.getElementById("idea").value = "";
+      document.getElementById("result").innerText = "Your generated prompt will appear here.";
+      document.getElementById("negativeResult").innerText = "Your negative prompt will appear here.";
+    }
+
+    async function loadMe() {
+      try {
+        const res = await fetch("/api/me");
+        const data = await res.json();
+
+        if (data.logged_in) {
+          currentUser = data.user;
+          document.getElementById("userBadge").innerText = "Logged in: " + data.user.username;
+          document.getElementById("loginTopBtn").classList.add("hidden");
+          document.getElementById("signupTopBtn").classList.add("hidden");
+          document.getElementById("logoutTopBtn").classList.remove("hidden");
+          loadSavedPrompts();
+        } else {
+          currentUser = null;
+          document.getElementById("userBadge").innerText = "Not logged in";
+          document.getElementById("loginTopBtn").classList.remove("hidden");
+          document.getElementById("signupTopBtn").classList.remove("hidden");
+          document.getElementById("logoutTopBtn").classList.add("hidden");
+          document.getElementById("savedPrompts").innerHTML = '<div class="muted">Login to view saved prompts.</div>';
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function signup() {
+      try {
+        const data = await fetchJSON("/api/signup", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            username: document.getElementById("signupUsername").value,
+            email: document.getElementById("signupEmail").value,
+            password: document.getElementById("signupPassword").value
+          })
+        });
+        setText("signupMessage", data.message);
+        closeModal("signupModal");
+        await loadMe();
+      } catch (e) {
+        setText("signupMessage", e.message);
+      }
+    }
+
+    async function login() {
+      try {
+        const data = await fetchJSON("/api/login", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            email: document.getElementById("loginEmail").value,
+            password: document.getElementById("loginPassword").value
+          })
+        });
+        setText("loginMessage", data.message);
+        closeModal("loginModal");
+        await loadMe();
+      } catch (e) {
+        setText("loginMessage", e.message);
+      }
+    }
+
+    async function logout() {
+      try {
+        const data = await fetchJSON("/api/logout", { method: "POST" });
+        alert(data.message);
+        await loadMe();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    async function processPrompt() {
+      try {
+        document.getElementById("result").innerText = "Working...";
+        document.getElementById("negativeResult").innerText = "Working...";
+
+        const data = await fetchJSON("/api/process", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            idea: document.getElementById("idea").value,
+            mode: document.getElementById("mode").value,
+            model_name: document.getElementById("modelName").value,
+            style_name: document.getElementById("styleName").value,
+            output_language: document.getElementById("outputLanguage").value
+          })
+        });
+
+        document.getElementById("result").innerText = data.positive_prompt || "";
+        document.getElementById("negativeResult").innerText = data.negative_prompt || "";
+      } catch (e) {
+        document.getElementById("result").innerText = e.message;
+        document.getElementById("negativeResult").innerText = e.message;
+      }
+    }
+
+    async function imageToPrompt() {
+      try {
+        const fileInput = document.getElementById("imageFile");
+        if (!fileInput.files[0]) {
+          setText("imageMessage", "Please choose an image first.");
+          return;
+        }
+
+        setText("imageMessage", "Working...");
+
+        const formData = new FormData();
+        formData.append("image", fileInput.files[0]);
+        formData.append("model_name", document.getElementById("modelName").value);
+        formData.append("style_name", document.getElementById("styleName").value);
+        formData.append("output_language", document.getElementById("outputLanguage").value);
+
+        const response = await fetch("/api/image-to-prompt", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Image to prompt failed");
+
+        lastUploadedFilename = data.uploaded_filename || "";
+        document.getElementById("result").innerText = data.positive_prompt || "";
+        document.getElementById("negativeResult").innerText = data.negative_prompt || "";
+        setText("imageMessage", "Done.");
+      } catch (e) {
+        setText("imageMessage", e.message);
+      }
+    }
+
+    async function deleteUploadedImage() {
+      try {
+        if (!lastUploadedFilename) {
+          alert("No uploaded image to delete.");
+          return;
+        }
+
+        const data = await fetchJSON("/api/delete-uploaded-image", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ filename: lastUploadedFilename })
+        });
+
+        document.getElementById("imageFile").value = "";
+        lastUploadedFilename = "";
+        setText("imageMessage", data.message);
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    async function savePrompt() {
+      try {
+        const finalPrompt = document.getElementById("result").innerText;
+        const negativePrompt = document.getElementById("negativeResult").innerText;
+
+        const data = await fetchJSON("/api/save-prompt", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            idea: document.getElementById("idea").value,
+            final_prompt: finalPrompt,
+            negative_prompt: negativePrompt,
+            mode: document.getElementById("mode").value,
+            model_name: document.getElementById("modelName").value,
+            style_name: document.getElementById("styleName").value,
+            output_language: document.getElementById("outputLanguage").value
+          })
+        });
+
+        alert(data.message);
+        loadSavedPrompts();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    async function loadSavedPrompts() {
+      if (!currentUser) return;
+
+      try {
+        const search = document.getElementById("searchInput").value.trim();
+        const response = await fetch("/api/saved-prompts?search=" + encodeURIComponent(search));
+        const data = await response.json();
+
+        const box = document.getElementById("savedPrompts");
+        box.innerHTML = "";
+
+        if (!data.items || data.items.length === 0) {
+          box.innerHTML = '<div class="muted">No saved prompts found.</div>';
+          return;
+        }
+
+        data.items.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "prompt-item";
+          div.innerHTML = `
+            <div><strong>${escapeHtml(item.style_name)}</strong> · ${escapeHtml(item.model_name)} · ${escapeHtml(item.output_language)} · <span class="muted">${escapeHtml(item.mode)}</span></div>
+            <br>
+            <div><strong>Idea:</strong> ${escapeHtml(item.idea)}</div>
+            <br>
+            <div><strong>Positive Prompt:</strong><br>${escapeHtml(item.final_prompt)}</div>
+            <br>
+            <div><strong>Negative Prompt:</strong><br>${escapeHtml(item.negative_prompt || "")}</div>
+            <br>
+            <button type="button" onclick='useSavedPrompt(${JSON.stringify(item.final_prompt)}, ${JSON.stringify(item.negative_prompt || "")})'>Use</button>
+            <button type="button" class="danger" onclick="deletePrompt(${item.id})">Delete</button>
+          `;
+          box.appendChild(div);
+        });
+      } catch (e) {
+        document.getElementById("savedPrompts").innerHTML = '<div class="muted">' + e.message + '</div>';
+      }
+    }
+
+    function useSavedPrompt(promptText, negativeText) {
+      document.getElementById("result").innerText = promptText;
+      document.getElementById("negativeResult").innerText = negativeText || "";
+    }
+
+    async function deletePrompt(id) {
+      if (!confirm("Delete this prompt?")) return;
+
+      try {
+        const response = await fetch("/api/delete-prompt/" + id, { method: "DELETE" });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Delete failed");
+        loadSavedPrompts();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    async function deleteAllHistory() {
+      if (!confirm("Delete all saved history?")) return;
+
+      try {
+        const response = await fetch("/api/delete-all-history", { method: "DELETE" });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Delete all failed");
+        alert(data.message);
+        loadSavedPrompts();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    async function downloadTxt() {
+      try {
+        const content =
+          "Positive Prompt:\n" +
+          document.getElementById("result").innerText +
+          "\n\nNegative Prompt:\n" +
+          document.getElementById("negativeResult").innerText;
+
+        const response = await fetch("/api/download-txt", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ content })
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Download failed");
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "prompt_result.txt";
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } catch (e) {
+        alert(e.message);
+      }
     }
 
     function escapeHtml(text) {
       return String(text)
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replaceAll(">", "&gt;");
     }
 
-    $("generateBtn").addEventListener("click", () => callProcess("generate"));
-    $("shortenBtn").addEventListener("click", () => callProcess("shorten"));
-    $("improveBtn").addEventListener("click", () => callProcess("improve_more"));
-    $("imageBtn").addEventListener("click", imageToPrompt);
-    $("copyPromptBtn").addEventListener("click", copyPrompt);
-    $("copyNegativeBtn").addEventListener("click", copyNegativePrompt);
-    $("downloadBtn").addEventListener("click", downloadTxt);
-    $("saveBtn").addEventListener("click", savePrompt);
-    $("clearBtn").addEventListener("click", clearAll);
-    $("themeBtn").addEventListener("click", toggleTheme);
-    $("signupBtn").addEventListener("click", signup);
-    $("loginBtn").addEventListener("click", login);
-    $("logoutBtn").addEventListener("click", logout);
-    $("clearHistoryBtn").addEventListener("click", clearHistory);
-    $("savedSearch").addEventListener("input", loadSavedPrompts);
-
-    checkLogin();
+    loadTheme();
+    loadMe();
   </script>
 </body>
 </html>

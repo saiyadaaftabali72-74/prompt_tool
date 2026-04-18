@@ -1,33 +1,40 @@
 import os
+import json
 import sqlite3
 import base64
 from datetime import datetime
 from functools import wraps
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from openai import OpenAI
 
-load_dotenv()
-
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+ENV_PATH = os.path.join(BASE_DIR, ".env")
+load_dotenv(ENV_PATH)
+
 DB_PATH = os.path.join(BASE_DIR, "prompt_tool.db")
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
+DOWNLOAD_FILE = os.path.join(BASE_DIR, "prompt_result.txt")
+
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY", "change_me_now")
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "change_me_now_123")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-OPENROUTER_API_KEY = "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".strip()
+OPENROUTER_API_KEY = "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"
 TEXT_MODEL = os.getenv("TEXT_MODEL", "openrouter/auto")
-VISION_MODEL = os.getenv("VISION_MODEL", "openrouter/free")
+VISION_MODEL = os.getenv("VISION_MODEL", "openrouter/auto")
 SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:5000")
 SITE_NAME = os.getenv("SITE_NAME", "Prompt Engineer Tool")
+
+print("ENV PATH:", ENV_PATH)
+print("OPENROUTER KEY FOUND:", bool(OPENROUTER_API_KEY))
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
@@ -38,43 +45,52 @@ client = OpenAI(
     },
 )
 
-MODEL_PROMPT_HINTS = {
-    "Midjourney": "Optimize for Midjourney style prompt writing. Use descriptive visual language and a strong artistic composition.",
-    "Flux": "Optimize for Flux image generation. Keep the prompt clear, rich, and visually precise.",
-    "SDXL": "Optimize for SDXL prompt writing. Use strong visual descriptors and photorealistic details where relevant.",
-}
-
-MODE_HINTS = {
-    "Image Prompt": "Create one polished image-generation prompt.",
-    "Video Prompt": "Create one cinematic video-generation prompt with motion, camera movement, atmosphere, and scene flow.",
-    "Logo Prompt": "Create one clean logo-design prompt with brand identity, symbolism, composition, and visual simplicity.",
-    "Product Ad Prompt": "Create one premium ad-style prompt that highlights the product, background, lighting, and commercial quality.",
-    "Thumbnail Prompt": "Create one bold, high-click-through thumbnail prompt with visual contrast, readability, and dramatic composition.",
-}
-
 STYLE_HINTS = {
-    "Cinematic": "Use cinematic, dramatic, visually rich language.",
-    "Realistic": "Keep it realistic, natural, highly detailed, and believable.",
-    "Luxury": "Use premium, elegant, polished, expensive-looking aesthetics.",
-    "Fantasy": "Use magical, mythical, epic visual language.",
-    "Anime": "Use anime-inspired style, expressive visuals, and strong stylization.",
-    "Fashion": "Use editorial, stylish, trendy, magazine-quality aesthetics.",
-    "Horror": "Use dark, eerie, unsettling atmosphere and visual details.",
-    "Advertising": "Use commercial, polished, high-conversion ad visuals.",
+    "Ultra-Realistic": "Make the prompt ultra-realistic, lifelike, richly detailed, highly photographic, with natural lighting, premium textures, and realism.",
+    "Realistic": "Make the prompt realistic, believable, visually grounded, and naturally detailed.",
+    "Animated": "Make the prompt suitable for high-quality animated visuals with expressive design and appealing stylization.",
+    "Cinematic": "Make the prompt cinematic with dramatic composition, mood, camera language, depth, and film-style lighting.",
+    "Fantasy": "Make the prompt imaginative, magical, epic, and visually rich.",
+    "Anime": "Make the prompt suitable for anime-style visuals with expressive characters and stylized details.",
+    "3D Render": "Make the prompt suitable for a polished 3D render with realistic materials and strong lighting.",
+    "Pixel Art": "Make the prompt suitable for pixel art with crisp retro detail and readable composition."
 }
 
-NEGATIVE_BY_MODE = {
-    "Image Prompt": "blurry, low quality, bad anatomy, extra fingers, deformed hands, distorted face, watermark, text, cropped, noisy, oversaturated",
-    "Video Prompt": "shaky camera, blurry motion, low quality, flicker, bad transitions, artifacts, distorted body, watermark, text overlay",
-    "Logo Prompt": "blurry, cluttered design, low resolution, bad typography, distorted shapes, watermark, noisy background",
-    "Product Ad Prompt": "blurry, poor lighting, messy background, distorted product, low quality, watermark, text overlay",
-    "Thumbnail Prompt": "blurry, dull colors, cluttered composition, weak contrast, unreadable subject, watermark, low quality",
+MODEL_HINTS = {
+    "Flux": "Optimize for Flux image generation. Keep the prompt visually clear, rich, modern, and precise.",
+    "Midjourney": "Optimize for Midjourney with elegant visual phrasing, stylization, artistic composition, and strong direction.",
+    "SDXL": "Optimize for SDXL with detailed descriptors, coherent scene design, and clear subject emphasis."
 }
+
+LANGUAGE_HINTS = {
+    "Auto": "Understand the user's language automatically and respond in the most suitable language.",
+    "English": "Write the final output in natural English.",
+    "Hindi": "Write the final output in natural Hindi.",
+    "Urdu": "Write the final output in natural Urdu.",
+    "Arabic": "Write the final output in natural Arabic.",
+    "Spanish": "Write the final output in natural Spanish.",
+    "French": "Write the final output in natural French.",
+    "German": "Write the final output in natural German.",
+    "Portuguese": "Write the final output in natural Portuguese.",
+    "Russian": "Write the final output in natural Russian.",
+    "Japanese": "Write the final output in natural Japanese.",
+    "Korean": "Write the final output in natural Korean.",
+    "Chinese": "Write the final output in natural Chinese."
+}
+
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def ensure_column(cur, table_name, column_name, column_def):
+    cur.execute(f"PRAGMA table_info({table_name})")
+    columns = [row[1] for row in cur.fetchall()]
+    if column_name not in columns:
+        cur.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_def}")
+
 
 def init_db():
     conn = get_db()
@@ -83,7 +99,8 @@ def init_db():
     cur.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
+            username TEXT NOT NULL UNIQUE,
+            email TEXT NOT NULL UNIQUE,
             password_hash TEXT NOT NULL,
             created_at TEXT NOT NULL
         )
@@ -94,18 +111,21 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             idea TEXT NOT NULL,
+            final_prompt TEXT NOT NULL,
             mode TEXT NOT NULL,
-            style TEXT NOT NULL,
-            model_label TEXT NOT NULL,
-            prompt TEXT NOT NULL,
-            negative_prompt TEXT NOT NULL,
+            model_name TEXT NOT NULL,
+            style_name TEXT NOT NULL,
+            output_language TEXT NOT NULL,
             created_at TEXT NOT NULL,
-            FOREIGN KEY (user_id) REFERENCES users(id)
+            FOREIGN KEY(user_id) REFERENCES users(id)
         )
     """)
 
+    ensure_column(cur, "saved_prompts", "negative_prompt", "negative_prompt TEXT DEFAULT ''")
+
     conn.commit()
     conn.close()
+
 
 def login_required(fn):
     @wraps(fn)
@@ -115,83 +135,94 @@ def login_required(fn):
         return fn(*args, **kwargs)
     return wrapper
 
-def allowed_file(filename: str) -> bool:
+
+def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def model_label_to_api_name(model_label: str) -> str:
-    # UI labels map to one configured text model for simplicity.
-    # You can later map each one to different OpenRouter models if you want.
-    return TEXT_MODEL
 
-def build_system_prompt(mode: str, style: str, model_label: str, action: str) -> str:
-    mode_hint = MODE_HINTS.get(mode, MODE_HINTS["Image Prompt"])
-    style_hint = STYLE_HINTS.get(style, STYLE_HINTS["Cinematic"])
-    model_hint = MODEL_PROMPT_HINTS.get(model_label, MODEL_PROMPT_HINTS["Midjourney"])
+def build_system_prompt(mode, model_name, style_name, output_language):
+    model_hint = MODEL_HINTS.get(model_name, MODEL_HINTS["Flux"])
+    style_hint = STYLE_HINTS.get(style_name, STYLE_HINTS["Realistic"])
+    language_hint = LANGUAGE_HINTS.get(output_language, LANGUAGE_HINTS["Auto"])
 
-    action_hint = {
-        "generate": "Turn the user's short idea into one excellent final prompt.",
-        "shorten": "Shorten the prompt while keeping it strong, clear, and useful.",
-        "improve_more": "Take the user's idea and make the prompt much more detailed, refined, and visually rich.",
-    }.get(action, "Turn the user's short idea into one excellent final prompt.")
-
-    return f"""
-You are a world-class AI prompt engineer.
-
-Rules:
-- Always respond in English.
-- Return only the final prompt. No explanation, no bullets, no notes.
-- Make the result production-ready.
-- Include subject, setting, mood, lighting, composition, texture, style, and quality cues when relevant.
-
-Mode guidance:
-{mode_hint}
-
-Style guidance:
-{style_hint}
-
-Model guidance:
-{model_hint}
-
-Task:
-{action_hint}
-""".strip()
-
-def negative_prompt_for_mode(mode: str) -> str:
-    return NEGATIVE_BY_MODE.get(mode, NEGATIVE_BY_MODE["Image Prompt"])
-
-def ensure_api_key():
-    if not OPENROUTER_API_KEY:
-        raise RuntimeError("OPENROUTER_API_KEY is missing in .env")
-
-def generate_text_prompt(user_input: str, mode: str, style: str, model_label: str, action: str) -> str:
-    ensure_api_key()
-
-    if not user_input.strip():
-        return "Please enter an idea first."
-
-    response = client.chat.completions.create(
-        model=model_label_to_api_name(model_label),
-        messages=[
-            {"role": "system", "content": build_system_prompt(mode, style, model_label, action)},
-            {"role": "user", "content": user_input},
-        ],
+    base = (
+        "You are an elite prompt engineer. "
+        "You understand casual user wording, mixed-language chat, imperfect spelling, and Hindi written in Roman letters. "
+        "Understand what the user means and convert it into a polished professional result. "
+        f"{model_hint} {style_hint} {language_hint} "
     )
 
-    return response.choices[0].message.content.strip()
+    if mode == "generate":
+        return base + (
+            "Create a strong positive prompt and also a useful negative prompt. "
+            "Improve subject details, environment, composition, mood, camera, lighting, style, colors, and useful visual details."
+        )
+    if mode == "improve":
+        return base + (
+            "Improve the user's prompt strongly and also provide a suitable negative prompt."
+        )
+    if mode == "shorten":
+        return base + (
+            "Shorten the user's prompt while preserving the meaning, and also provide a suitable negative prompt."
+        )
+    return base
 
-def image_file_to_data_url(filepath: str) -> str:
-    ext = os.path.splitext(filepath)[1].lower().replace(".", "")
-    if ext == "jpg":
-        ext = "jpeg"
-    mime = f"image/{ext}"
-    with open(filepath, "rb") as f:
-        encoded = base64.b64encode(f.read()).decode("utf-8")
-    return f"data:{mime};base64,{encoded}"
 
-def generate_image_prompt_from_uploaded_image(filepath: str, mode: str, style: str, model_label: str) -> str:
-    ensure_api_key()
+def safe_prompt_json(content):
+    try:
+        data = json.loads(content)
+        return {
+            "positive_prompt": (data.get("positive_prompt") or "").strip(),
+            "negative_prompt": (data.get("negative_prompt") or "").strip()
+        }
+    except Exception:
+        return {
+            "positive_prompt": content.strip(),
+            "negative_prompt": "low quality, blurry, bad anatomy, extra fingers, distorted, watermark, text, cropped, duplicate, noisy, ugly"
+        }
 
-    image_data_url = image_file_to_data_url(filepath)
+
+def generate_prompt_with_ai(idea, mode, model_name, style_name, output_language):
+    system_prompt = build_system_prompt(mode, model_name, style_name, output_language)
+
+    user_prompt = (
+        f"User input:\n{idea}\n\n"
+        "Return JSON only in this exact format:\n"
+        '{'
+        '"positive_prompt":"...",'
+        '"negative_prompt":"..."'
+        '}\n'
+        "Do not write any explanation outside JSON."
+    )
+
+    response = client.chat.completions.create(
+        model=TEXT_MODEL,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ],
+        temperature=0.9
+    )
+
+    return safe_prompt_json(response.choices[0].message.content.strip())
+
+
+def image_to_prompt_with_ai(image_path, model_name, style_name, output_language):
+    model_hint = MODEL_HINTS.get(model_name, MODEL_HINTS["Flux"])
+    style_hint = STYLE_HINTS.get(style_name, STYLE_HINTS["Realistic"])
+    language_hint = LANGUAGE_HINTS.get(output_language, LANGUAGE_HINTS["Auto"])
+
+    ext = os.path.splitext(image_path)[1].lower()
+    mime = "image/png"
+    if ext in [".jpg", ".jpeg"]:
+        mime = "image/jpeg"
+    elif ext == ".webp":
+        mime = "image/webp"
+
+    with open(image_path, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode("utf-8")
+
+    data_url = f"data:{mime};base64,{b64}"
 
     response = client.chat.completions.create(
         model=VISION_MODEL,
@@ -199,202 +230,315 @@ def generate_image_prompt_from_uploaded_image(filepath: str, mode: str, style: s
             {
                 "role": "system",
                 "content": (
-                    "You are a world-class prompt engineer for AI image generation. "
-                    "Analyze the uploaded image and convert it into one polished, detailed, visually rich prompt in English. "
-                    "Return only the final prompt. No explanation."
-                ),
+                    "You are an expert visual prompt engineer. "
+                    "Analyze the uploaded image and create a polished positive prompt and a useful negative prompt. "
+                    f"{model_hint} {style_hint} {language_hint} "
+                    'Return JSON only in this format: {"positive_prompt":"...","negative_prompt":"..."}'
+                )
             },
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": f"Mode: {mode}\nStyle: {style}\nTarget style: {model_label}\nCreate one perfect generation prompt from this image."},
-                    {"type": "image_url", "image_url": {"url": image_data_url}},
-                ],
-            },
+                    {"type": "text", "text": "Create a strong AI image prompt and negative prompt from this uploaded image."},
+                    {"type": "image_url", "image_url": {"url": data_url}}
+                ]
+            }
         ],
+        temperature=0.7
     )
 
-    return response.choices[0].message.content.strip()
+    return safe_prompt_json(response.choices[0].message.content.strip())
+
 
 @app.route("/")
 def home():
-    return render_template("index.html", username=session.get("username"))
+    return render_template("index.html")
+
+
+@app.route("/api/me", methods=["GET"])
+def api_me():
+    if "user_id" not in session:
+        return jsonify({"logged_in": False})
+
+    return jsonify({
+        "logged_in": True,
+        "user": {
+            "id": session["user_id"],
+            "username": session["username"],
+            "email": session["email"]
+        }
+    })
+
 
 @app.route("/api/signup", methods=["POST"])
 def signup():
-    data = request.get_json(force=True)
-    username = data.get("username", "").strip()
-    password = data.get("password", "").strip()
+    data = request.get_json()
+    username = (data.get("username") or "").strip()
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
 
-    if len(username) < 3 or len(password) < 6:
-        return jsonify({"error": "Username must be 3+ chars and password 6+ chars."}), 400
+    if not username or not email or not password:
+        return jsonify({"error": "All signup fields are required."}), 400
 
-    password_hash = generate_password_hash(password)
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if len(password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters."}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
 
     try:
-        conn = get_db()
-        conn.execute(
-            "INSERT INTO users (username, password_hash, created_at) VALUES (?, ?, ?)",
-            (username, password_hash, now),
+        cur.execute(
+            "INSERT INTO users (username, email, password_hash, created_at) VALUES (?, ?, ?, ?)",
+            (username, email, generate_password_hash(password), datetime.utcnow().isoformat())
         )
         conn.commit()
-        conn.close()
-        return jsonify({"message": "Signup successful. Please login."})
+        user_id = cur.lastrowid
+
+        session["user_id"] = user_id
+        session["username"] = username
+        session["email"] = email
+
+        return jsonify({"message": "Signup successful."})
     except sqlite3.IntegrityError:
-        return jsonify({"error": "Username already exists."}), 400
+        return jsonify({"error": "Username or email already exists."}), 400
+    finally:
+        conn.close()
+
 
 @app.route("/api/login", methods=["POST"])
 def login():
-    data = request.get_json(force=True)
-    username = data.get("username", "").strip()
-    password = data.get("password", "").strip()
+    data = request.get_json()
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
 
     conn = get_db()
-    user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM users WHERE email = ?", (email,))
+    user = cur.fetchone()
     conn.close()
 
-    if not user or not check_password_hash(user["password_hash"], password):
-        return jsonify({"error": "Invalid username or password."}), 401
+    if not user:
+        return jsonify({"error": "User not found."}), 404
+
+    if not check_password_hash(user["password_hash"], password):
+        return jsonify({"error": "Wrong password."}), 401
 
     session["user_id"] = user["id"]
     session["username"] = user["username"]
-    return jsonify({"message": "Login successful.", "username": user["username"]})
+    session["email"] = user["email"]
+
+    return jsonify({"message": "Login successful."})
+
 
 @app.route("/api/logout", methods=["POST"])
 def logout():
     session.clear()
-    return jsonify({"message": "Logged out."})
+    return jsonify({"message": "Logged out successfully."})
 
-@app.route("/api/me", methods=["GET"])
-def me():
-    return jsonify({
-        "logged_in": "user_id" in session,
-        "username": session.get("username")
-    })
 
 @app.route("/api/process", methods=["POST"])
-def process():
+def process_prompt():
+    if not OPENROUTER_API_KEY:
+        return jsonify({"error": "OPENROUTER_API_KEY is missing in .env"}), 500
+
+    data = request.get_json()
+    idea = (data.get("idea") or "").strip()
+    mode = (data.get("mode") or "generate").strip()
+    model_name = (data.get("model_name") or "Flux").strip()
+    style_name = (data.get("style_name") or "Realistic").strip()
+    output_language = (data.get("output_language") or "Auto").strip()
+
+    if not idea:
+        return jsonify({"error": "Please enter your idea first."}), 400
+
     try:
-        data = request.get_json(force=True)
-        text = data.get("text", "").strip()
-        mode = data.get("mode", "Image Prompt")
-        style = data.get("style", "Cinematic")
-        model_label = data.get("model_label", "Midjourney")
-        action = data.get("action", "generate")
-
-        prompt = generate_text_prompt(text, mode, style, model_label, action)
-        negative = negative_prompt_for_mode(mode)
-
-        return jsonify({
-            "prompt": prompt,
-            "negative_prompt": negative
-        })
+        result = generate_prompt_with_ai(idea, mode, model_name, style_name, output_language)
+        return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/image-to-prompt", methods=["POST"])
 def image_to_prompt():
+    if not OPENROUTER_API_KEY:
+        return jsonify({"error": "OPENROUTER_API_KEY is missing in .env"}), 500
+
+    if "image" not in request.files:
+        return jsonify({"error": "No image uploaded."}), 400
+
+    image = request.files["image"]
+    model_name = request.form.get("model_name", "Flux")
+    style_name = request.form.get("style_name", "Realistic")
+    output_language = request.form.get("output_language", "Auto")
+
+    if image.filename == "":
+        return jsonify({"error": "No selected file."}), 400
+
+    if not allowed_file(image.filename):
+        return jsonify({"error": "Unsupported file type."}), 400
+
+    filename = secure_filename(image.filename)
+    unique_name = f"{datetime.utcnow().strftime('%Y%m%d%H%M%S')}_{filename}"
+    save_path = os.path.join(UPLOAD_FOLDER, unique_name)
+    image.save(save_path)
+
     try:
-        if "image" not in request.files:
-            return jsonify({"error": "Please upload an image."}), 400
-
-        file = request.files["image"]
-        mode = request.form.get("mode", "Image Prompt")
-        style = request.form.get("style", "Cinematic")
-        model_label = request.form.get("model_label", "Midjourney")
-
-        if file.filename == "":
-            return jsonify({"error": "No file selected."}), 400
-
-        if not allowed_file(file.filename):
-            return jsonify({"error": "Only png, jpg, jpeg, webp files are allowed."}), 400
-
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file.save(filepath)
-
-        prompt = generate_image_prompt_from_uploaded_image(filepath, mode, style, model_label)
-        negative = negative_prompt_for_mode(mode)
-
-        return jsonify({
-            "prompt": prompt,
-            "negative_prompt": negative
-        })
+        result = image_to_prompt_with_ai(save_path, model_name, style_name, output_language)
+        result["uploaded_filename"] = unique_name
+        return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/delete-uploaded-image", methods=["POST"])
+def delete_uploaded_image():
+    data = request.get_json()
+    filename = (data.get("filename") or "").strip()
+
+    if not filename:
+        return jsonify({"error": "No filename provided."}), 400
+
+    safe_name = os.path.basename(filename)
+    file_path = os.path.join(UPLOAD_FOLDER, safe_name)
+
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        return jsonify({"message": "Uploaded image deleted successfully."})
+
+    return jsonify({"error": "File not found."}), 404
+
 
 @app.route("/api/save-prompt", methods=["POST"])
 @login_required
 def save_prompt():
-    data = request.get_json(force=True)
+    data = request.get_json()
 
-    idea = data.get("idea", "").strip()
-    mode = data.get("mode", "").strip()
-    style = data.get("style", "").strip()
-    model_label = data.get("model_label", "").strip()
-    prompt = data.get("prompt", "").strip()
-    negative_prompt = data.get("negative_prompt", "").strip()
+    idea = (data.get("idea") or "").strip()
+    final_prompt = (data.get("final_prompt") or "").strip()
+    negative_prompt = (data.get("negative_prompt") or "").strip()
+    mode = (data.get("mode") or "generate").strip()
+    model_name = (data.get("model_name") or "Flux").strip()
+    style_name = (data.get("style_name") or "Realistic").strip()
+    output_language = (data.get("output_language") or "Auto").strip()
 
-    if not prompt:
+    if not final_prompt:
         return jsonify({"error": "Nothing to save."}), 400
 
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
     conn = get_db()
-    conn.execute("""
-        INSERT INTO saved_prompts (user_id, idea, mode, style, model_label, prompt, negative_prompt, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (session["user_id"], idea, mode, style, model_label, prompt, negative_prompt, now))
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO saved_prompts
+        (user_id, idea, final_prompt, negative_prompt, mode, model_name, style_name, output_language, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        session["user_id"],
+        idea,
+        final_prompt,
+        negative_prompt,
+        mode,
+        model_name,
+        style_name,
+        output_language,
+        datetime.utcnow().isoformat()
+    ))
     conn.commit()
     conn.close()
 
-    return jsonify({"message": "Prompt saved."})
+    return jsonify({"message": "Prompt saved successfully."})
+
 
 @app.route("/api/saved-prompts", methods=["GET"])
 @login_required
-def get_saved_prompts():
-    q = request.args.get("q", "").strip()
+def saved_prompts():
+    search = (request.args.get("search") or "").strip()
 
     conn = get_db()
-    if q:
-        rows = conn.execute("""
+    cur = conn.cursor()
+
+    if search:
+        cur.execute("""
             SELECT * FROM saved_prompts
             WHERE user_id = ?
-              AND (
+            AND (
                 idea LIKE ?
-                OR mode LIKE ?
-                OR style LIKE ?
-                OR model_label LIKE ?
-                OR prompt LIKE ?
+                OR final_prompt LIKE ?
                 OR negative_prompt LIKE ?
-              )
+                OR model_name LIKE ?
+                OR style_name LIKE ?
+                OR output_language LIKE ?
+            )
             ORDER BY id DESC
         """, (
             session["user_id"],
-            f"%{q}%", f"%{q}%", f"%{q}%", f"%{q}%", f"%{q}%", f"%{q}%"
-        )).fetchall()
+            f"%{search}%",
+            f"%{search}%",
+            f"%{search}%",
+            f"%{search}%",
+            f"%{search}%",
+            f"%{search}%"
+        ))
     else:
-        rows = conn.execute("""
+        cur.execute("""
             SELECT * FROM saved_prompts
             WHERE user_id = ?
             ORDER BY id DESC
-        """, (session["user_id"],)).fetchall()
+        """, (session["user_id"],))
 
+    rows = cur.fetchall()
     conn.close()
-    return jsonify([dict(r) for r in rows])
 
-@app.route("/api/saved-prompts/<int:prompt_id>", methods=["DELETE"])
+    items = []
+    for row in rows:
+        items.append({
+            "id": row["id"],
+            "idea": row["idea"],
+            "final_prompt": row["final_prompt"],
+            "negative_prompt": row["negative_prompt"] if "negative_prompt" in row.keys() else "",
+            "mode": row["mode"],
+            "model_name": row["model_name"],
+            "style_name": row["style_name"],
+            "output_language": row["output_language"],
+            "created_at": row["created_at"]
+        })
+
+    return jsonify({"items": items})
+
+
+@app.route("/api/delete-prompt/<int:prompt_id>", methods=["DELETE"])
 @login_required
-def delete_saved_prompt(prompt_id: int):
+def delete_prompt(prompt_id):
     conn = get_db()
-    conn.execute(
-        "DELETE FROM saved_prompts WHERE id = ? AND user_id = ?",
-        (prompt_id, session["user_id"])
-    )
+    cur = conn.cursor()
+    cur.execute("DELETE FROM saved_prompts WHERE id = ? AND user_id = ?", (prompt_id, session["user_id"]))
     conn.commit()
     conn.close()
-    return jsonify({"message": "Saved prompt deleted."})
+    return jsonify({"message": "Prompt deleted successfully."})
+
+
+@app.route("/api/delete-all-history", methods=["DELETE"])
+@login_required
+def delete_all_history():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM saved_prompts WHERE user_id = ?", (session["user_id"],))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "All history deleted successfully."})
+
+
+@app.route("/api/download-txt", methods=["POST"])
+def download_txt():
+    data = request.get_json()
+    content = (data.get("content") or "").strip()
+
+    if not content:
+        return jsonify({"error": "Nothing to download."}), 400
+
+    with open(DOWNLOAD_FILE, "w", encoding="utf-8") as f:
+        f.write(content)
+
+    return send_file(DOWNLOAD_FILE, as_attachment=True)
+
 
 if __name__ == "__main__":
     init_db()
