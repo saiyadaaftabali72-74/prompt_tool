@@ -15,10 +15,9 @@ from openai import OpenAI
 # -----------------------------
 # ENV + APP SETUP
 # -----------------------------
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-ENV_PATH = os.path.join(BASE_DIR, ".env")
-load_dotenv(ENV_PATH)
+load_dotenv()  # optional (local ke liye)
 
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DB_PATH = os.path.join(BASE_DIR, "prompt_tool.db")
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 DOWNLOAD_FILE = os.path.join(BASE_DIR, "prompt_result.txt")
@@ -32,7 +31,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "change_me_now_123")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
 
-OPENROUTER_API_KEY = os.environ.get("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", "").strip()
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
 TEXT_MODEL = os.environ.get("TEXT_MODEL", "openrouter/auto").strip()
 VISION_MODEL = os.environ.get("VISION_MODEL", "openrouter/auto").strip()
 SITE_URL = os.environ.get("SITE_URL", "https://prompt-tool-fali.onrender.com").strip()
@@ -46,7 +45,7 @@ print("OPENROUTER KEY PREFIX:", OPENROUTER_API_KEY[:8] if OPENROUTER_API_KEY els
 # -----------------------------
 # OPENROUTER CLIENT
 # -----------------------------
-def get_openrouter_client() -> OpenAI:
+def get_openrouter_client():
     if not OPENROUTER_API_KEY:
         raise ValueError("OPENROUTER_API_KEY missing on server")
 
