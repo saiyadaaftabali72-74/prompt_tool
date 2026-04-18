@@ -15,7 +15,7 @@ from openai import OpenAI
 # ENV + APP SETUP
 load_dotenv()
 
-BASE_DIR = os.path.abspath(os.path.dirname(_file_))
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DB_PATH = os.path.join(BASE_DIR, "prompt_tool.db")
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 DOWNLOAD_FILE = os.path.join(BASE_DIR, "prompt_result.txt")
@@ -24,7 +24,7 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-app = Flask(_name_)
+app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "change_me_now_123")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
