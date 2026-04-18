@@ -27,7 +27,7 @@ app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "change_me_now_123")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = "OPENROUTER_API_KEY"
 TEXT_MODEL = os.getenv("TEXT_MODEL", "openrouter/auto")
 VISION_MODEL = os.getenv("VISION_MODEL", "openrouter/auto")
 SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:5000")
