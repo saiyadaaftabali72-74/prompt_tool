@@ -1,5 +1,4 @@
 import os
-import io
 import json
 import base64
 import sqlite3
@@ -12,7 +11,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from openai import OpenAI
 
+# -----------------------------
 # ENV + APP SETUP
+# -----------------------------
 load_dotenv()
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -27,7 +28,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "change_me_now_123")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
 
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "").strip()
 TEXT_MODEL = os.environ.get("TEXT_MODEL", "openrouter/auto").strip()
@@ -37,6 +38,7 @@ SITE_NAME = os.environ.get("SITE_NAME", "Prompt Engineer Tool").strip()
 
 print("OPENROUTER KEY FOUND:", bool(OPENROUTER_API_KEY))
 print("OPENROUTER KEY PREFIX:", OPENROUTER_API_KEY[:8] if OPENROUTER_API_KEY else "NONE")
+
 
 # -----------------------------
 # OPENROUTER CLIENT
@@ -105,35 +107,34 @@ init_db()
 # HELPERS
 # -----------------------------
 STYLE_HINTS = {
-    "Realistic": "Make it realistic, lifelike, natural, detailed, believable, grounded in real-world visuals.",
-    "Ultra-Realistic": "Make it ultra-realistic, highly detailed, premium quality, cinematic realism, realistic textures and lighting.",
-    "Cinematic": "Use cinematic framing, dramatic lighting, strong atmosphere, movie-like composition, visual storytelling.",
-    "Animated": "Use animation style, clean shapes, expressive visuals, stylized details, vibrant visual design.",
-    "3D Animated": "Use 3D animated film style, polished textures, stylized realism, cinematic animated composition.",
-    "Anime": "Use anime-inspired style, expressive composition, dramatic mood, strong character and scene detail.",
-    "Fantasy": "Use fantasy worldbuilding, magical atmosphere, imaginative details, epic visual storytelling.",
-    "Dark": "Use dark moody atmosphere, dramatic shadows, mysterious tone, intense visual emotion.",
-    "Minimal": "Keep it clean, simple, elegant, focused, uncluttered, modern.",
+    "Realistic": "Make the image realistic, natural, clean, detailed, and visually believable.",
+    "Ultra-Realistic": "Make the image ultra-realistic, highly detailed, premium quality, lifelike, with realistic textures and lighting.",
+    "Animated": "Make the image look animated, stylized, vibrant, expressive, and polished.",
+    "3D Animated": "Make the image look like a high-quality 3D animated film with polished rendering and stylized realism.",
+    "Cinematic": "Use cinematic composition, dramatic lighting, rich atmosphere, and movie-like framing.",
+    "Anime": "Use anime-style visual language, clean details, dramatic mood, expressive scene composition.",
+    "Fantasy": "Add fantasy atmosphere, magical feel, imaginative worldbuilding, and epic detail.",
+    "Dark": "Create a dark, moody, mysterious atmosphere with strong shadows and dramatic emotion.",
+    "Minimal": "Keep the image clean, simple, elegant, modern, and uncluttered."
 }
-
 
 LANGUAGE_HINTS = {
-    "Auto": "Reply in the same language as the user's input. If mixed language is used, respond naturally in that mixed style.",
-    "English": "Reply only in English.",
-    "Hindi": "Reply only in Hindi.",
-    "Hinglish": "Reply only in Hinglish.",
-    "Urdu": "Reply only in Urdu.",
-    "Arabic": "Reply only in Arabic.",
-    "French": "Reply only in French.",
-    "Spanish": "Reply only in Spanish.",
-    "German": "Reply only in German.",
-    "Japanese": "Reply only in Japanese.",
-    "Korean": "Reply only in Korean.",
-    "Chinese": "Reply only in Chinese.",
+    "Auto": "Respond in the same language as the user's idea.",
+    "English": "Respond only in English.",
+    "Hindi": "Respond only in Hindi.",
+    "Hinglish": "Respond only in Hinglish.",
+    "Urdu": "Respond only in Urdu.",
+    "Arabic": "Respond only in Arabic.",
+    "French": "Respond only in French.",
+    "Spanish": "Respond only in Spanish.",
+    "German": "Respond only in German.",
+    "Japanese": "Respond only in Japanese.",
+    "Korean": "Respond only in Korean.",
+    "Chinese": "Respond only in Chinese."
 }
 
 
-def allowed_file(filename: str) -> bool:
+def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
@@ -146,23 +147,23 @@ def login_required(fn):
     return wrapper
 
 
-def save_text_file(content: str):
+def save_text_file(content):
     with open(DOWNLOAD_FILE, "w", encoding="utf-8") as f:
         f.write(content)
 
 
-def build_system_prompt(mode: str, model_name: str, style_name: str, output_language: str) -> str:
+def build_system_prompt(mode, model_name, style_name, output_language):
     style_hint = STYLE_HINTS.get(style_name, STYLE_HINTS["Realistic"])
     language_hint = LANGUAGE_HINTS.get(output_language, LANGUAGE_HINTS["Auto"])
 
     if mode == "Generate Perfect Prompt":
         task = """
 You are an expert prompt engineer.
-Your job is to transform a rough user idea into:
-1. a strong final generation prompt
-2. a matching negative prompt
+Convert the user's rough idea into:
+1. a strong final image generation prompt
+2. a strong negative prompt
 
-Return ONLY valid JSON in this format:
+Return ONLY valid JSON in this exact format:
 {
   "result": "final prompt here",
   "negative_prompt": "negative prompt here"
@@ -170,33 +171,66 @@ Return ONLY valid JSON in this format:
 """
     else:
         task = """
-You are an expert creative assistant.
-Improve the user's idea and turn it into:
-1. a polished final generation prompt
-2. a matching negative prompt
+You are an expert creative prompt assistant.
+Improve the user's idea and convert it into:
+1. a strong final image generation prompt
+2. a strong negative prompt
 
-Return ONLY valid JSON in this format:
+Return ONLY valid JSON in this exact format:
 {
   "result": "final prompt here",
   "negative_prompt": "negative prompt here"
 }
 """
 
-    model_hint = f"Target model style: {model_name}."
-    style_line = f"Visual style guidance: {style_hint}"
-    language_line = f"Language guidance: {language_hint}"
+    extra_rules = f"""
+Target model style: {model_name}
+Visual style guidance: {style_hint}
+Language guidance: {language_hint}
 
-    extra = """
-The final prompt must be detailed, clean, visually rich, and practical for image generation.
-The negative prompt must remove common quality issues, distortions, bad anatomy, blur, text, watermark, low quality, ugly details, and unwanted artifacts.
-Do not include markdown.
-Return JSON only.
+Rules:
+- "result" must never be empty
+- "negative_prompt" must never be empty
+- The final prompt should be rich, clean, detailed, visually strong, and practical for AI image generation
+- The negative prompt should remove blur, low quality, bad anatomy, deformed details, extra fingers, extra limbs, text, watermark, logos, cropped framing, ugly artifacts, noise, distortion
+- Return JSON only
 """
 
-    return "\n".join([task, model_hint, style_line, language_line, extra]).strip()
+    return f"{task}\n{extra_rules}".strip()
 
 
-def call_text_model(system_prompt: str, user_prompt: str) -> dict:
+def parse_model_json(raw_text):
+    raw_text = raw_text.strip()
+
+    try:
+        data = json.loads(raw_text)
+        result = (data.get("result") or "").strip()
+        negative_prompt = (data.get("negative_prompt") or "").strip()
+
+        if not result:
+            result = raw_text
+
+        if not negative_prompt:
+            negative_prompt = (
+                "low quality, blurry, bad anatomy, extra fingers, extra limbs, deformed, "
+                "distorted, watermark, text, logo, cropped, ugly, noisy, artifact"
+            )
+
+        return {
+            "result": result,
+            "negative_prompt": negative_prompt
+        }
+    except Exception:
+        return {
+            "result": raw_text,
+            "negative_prompt": (
+                "low quality, blurry, bad anatomy, extra fingers, extra limbs, deformed, "
+                "distorted, watermark, text, logo, cropped, ugly, noisy, artifact"
+            )
+        }
+
+
+def call_text_model(system_prompt, user_prompt):
     client = get_openrouter_client()
 
     response = client.chat.completions.create(
@@ -209,52 +243,45 @@ def call_text_model(system_prompt: str, user_prompt: str) -> dict:
     )
 
     raw = response.choices[0].message.content.strip()
-
-    try:
-        data = json.loads(raw)
-        result = (data.get("result") or "").strip()
-        negative_prompt = (data.get("negative_prompt") or "").strip()
-        return {
-            "result": result,
-            "negative_prompt": negative_prompt
-        }
-    except Exception:
-        # fallback if model returned text instead of JSON
-        return {
-            "result": raw,
-            "negative_prompt": "low quality, blurry, distorted, bad anatomy, extra fingers, extra limbs, watermark, text, logo, cropped, deformed, ugly"
-        }
+    return parse_model_json(raw)
 
 
-def image_file_to_base64(path: str) -> str:
+def image_file_to_base64(path):
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
 
-def call_vision_model(image_path: str, model_name: str, style_name: str, output_language: str) -> dict:
+def call_vision_model(image_path, model_name, style_name, output_language):
     client = get_openrouter_client()
-    b64 = image_file_to_base64(image_path)
+
     ext = image_path.rsplit(".", 1)[-1].lower()
     mime = "image/jpeg" if ext in ("jpg", "jpeg") else f"image/{ext}"
+    image_b64 = image_file_to_base64(image_path)
 
     style_hint = STYLE_HINTS.get(style_name, STYLE_HINTS["Realistic"])
     language_hint = LANGUAGE_HINTS.get(output_language, LANGUAGE_HINTS["Auto"])
 
     system_prompt = f"""
 You are an expert image-to-prompt converter.
-Look at the image and generate:
+
+Analyze the uploaded image and generate:
 1. a strong image generation prompt
-2. a matching negative prompt
+2. a strong negative prompt
 
 Language guidance: {language_hint}
-Style guidance: {style_hint}
+Visual style guidance: {style_hint}
 
-Return ONLY valid JSON in this format:
+Return ONLY valid JSON in this exact format:
 {{
   "result": "final prompt here",
   "negative_prompt": "negative prompt here"
 }}
-"""
+
+Rules:
+- "result" must never be empty
+- "negative_prompt" must never be empty
+- Return JSON only
+""".strip()
 
     response = client.chat.completions.create(
         model=VISION_MODEL,
@@ -263,33 +290,22 @@ Return ONLY valid JSON in this format:
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": f"Convert this image into a strong {model_name} prompt."},
+                    {"type": "text", "text": f"Convert this image into a high-quality {model_name} prompt."},
                     {
                         "type": "image_url",
-                        "image_url": {"url": f"data:{mime};base64,{b64}"}
-                    },
-                ],
-            },
+                        "image_url": {"url": f"data:{mime};base64,{image_b64}"}
+                    }
+                ]
+            }
         ],
         temperature=0.5,
     )
 
     raw = response.choices[0].message.content.strip()
-
-    try:
-        data = json.loads(raw)
-        return {
-            "result": (data.get("result") or "").strip(),
-            "negative_prompt": (data.get("negative_prompt") or "").strip()
-        }
-    except Exception:
-        return {
-            "result": raw,
-            "negative_prompt": "low quality, blurry, distorted, bad anatomy, extra fingers, extra limbs, watermark, text, logo, cropped, deformed, ugly"
-        }
+    return parse_model_json(raw)
 
 
-def generate_prompt_with_ai(idea: str, mode: str, model_name: str, style_name: str, output_language: str) -> dict:
+def generate_prompt_with_ai(idea, mode, model_name, style_name, output_language):
     system_prompt = build_system_prompt(mode, model_name, style_name, output_language)
     return call_text_model(system_prompt, idea)
 
@@ -320,6 +336,7 @@ def me():
 @app.route("/api/signup", methods=["POST"])
 def signup():
     data = request.get_json()
+
     username = (data.get("username") or "").strip()
     email = (data.get("email") or "").strip().lower()
     password = (data.get("password") or "").strip()
@@ -340,6 +357,7 @@ def signup():
         return jsonify({"error": "User already exists."}), 400
 
     password_hash = generate_password_hash(password)
+
     cur.execute(
         "INSERT INTO users (username, email, password_hash, created_at) VALUES (?, ?, ?, ?)",
         (username, email, password_hash, datetime.utcnow().isoformat())
@@ -363,6 +381,7 @@ def signup():
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json()
+
     email = (data.get("email") or "").strip().lower()
     password = (data.get("password") or "").strip()
 
@@ -415,9 +434,10 @@ def process():
         result = generate_prompt_with_ai(idea, mode, model_name, style_name, output_language)
         return jsonify(result)
     except Exception as e:
+        error_text = f"Error code: 500 - {str(e)}"
         return jsonify({
-            "result": f"Error code: 500 - {str(e)}",
-            "negative_prompt": f"Error code: 500 - {str(e)}"
+            "result": error_text,
+            "negative_prompt": error_text
         }), 500
 
 
@@ -534,8 +554,5 @@ def download_txt():
     )
 
 
-# -----------------------------
-# MAIN
-# -----------------------------
 if __name__ == "__main__":
     app.run(debug=True)
