@@ -17,14 +17,14 @@
         }
 
         .container {
-            max-width: 1300px;
+            max-width: 1280px;
             margin: 0 auto;
             padding: 20px;
         }
 
         .topbar {
             background: #ffffff;
-            border-radius: 16px;
+            border-radius: 18px;
             padding: 16px 20px;
             margin-bottom: 20px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
@@ -36,30 +36,32 @@
         }
 
         .brand {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
         }
 
-        .muted {
+        .subtext {
             color: #6b7280;
             font-size: 14px;
+            margin-top: 4px;
         }
 
-        .grid {
+        .main-grid {
             display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
+            grid-template-columns: 1.35fr 0.85fr;
             gap: 20px;
         }
 
         .card {
             background: #ffffff;
-            border-radius: 20px;
+            border-radius: 22px;
             padding: 24px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
         }
 
         h1, h2, h3 {
             margin-top: 0;
+            margin-bottom: 16px;
         }
 
         .form-grid {
@@ -69,19 +71,24 @@
         }
 
         label {
+            display: block;
             font-weight: bold;
             margin-bottom: 8px;
-            display: block;
         }
 
-        select, input[type="text"], input[type="email"], input[type="password"], textarea {
+        select,
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="file"],
+        textarea {
             width: 100%;
+            padding: 14px;
             border: 1px solid #d1d5db;
             border-radius: 14px;
-            padding: 14px;
             font-size: 15px;
-            background: #fff;
             outline: none;
+            background: #fff;
         }
 
         textarea {
@@ -90,10 +97,10 @@
         }
 
         .toolbar {
-            margin-top: 16px;
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
+            margin-top: 18px;
         }
 
         button {
@@ -121,23 +128,23 @@
             color: white;
         }
 
-        .danger {
-            background: #dc2626;
-            color: white;
-        }
-
         .dark {
             background: #111827;
             color: white;
         }
 
-        .gray {
+        .danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .light {
             background: #e5e7eb;
             color: #111827;
         }
 
         .result-box {
-            min-height: 190px;
+            min-height: 200px;
             border: 1px solid #d1d5db;
             border-radius: 16px;
             padding: 16px;
@@ -147,21 +154,32 @@
             overflow-wrap: anywhere;
         }
 
-        .result-section {
+        .section-gap {
             margin-bottom: 20px;
         }
 
-        .small-text {
-            font-size: 13px;
-            color: #6b7280;
+        .status {
             margin-top: 10px;
+            font-size: 14px;
+            color: #6b7280;
+            white-space: pre-wrap;
+        }
+
+        .divider {
+            height: 1px;
+            background: #e5e7eb;
+            margin: 24px 0;
         }
 
         .auth-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            margin-top: 20px;
+            margin-top: 24px;
+        }
+
+        .history-search {
+            margin-bottom: 14px;
         }
 
         .history-item {
@@ -172,39 +190,25 @@
             margin-bottom: 14px;
         }
 
-        .history-head {
-            font-size: 14px;
-            color: #4b5563;
-            margin-bottom: 10px;
-        }
-
-        .history-title {
-            font-weight: bold;
+        .history-date {
+            font-size: 13px;
+            color: #6b7280;
             margin-bottom: 8px;
         }
 
-        .search-row {
-            margin-bottom: 14px;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .status {
-            font-size: 14px;
+        .history-label {
+            font-weight: bold;
             margin-top: 8px;
+            margin-bottom: 6px;
+        }
+
+        .small-muted {
+            font-size: 14px;
             color: #6b7280;
         }
 
-        .divider {
-            height: 1px;
-            background: #e5e7eb;
-            margin: 20px 0;
-        }
-
         @media (max-width: 960px) {
-            .grid,
+            .main-grid,
             .auth-grid,
             .form-grid {
                 grid-template-columns: 1fr;
@@ -217,13 +221,12 @@
         <div class="topbar">
             <div>
                 <div class="brand">Prompt Engineer Tool</div>
-                <div class="muted">Idea → perfect prompt generator, multi-language support</div>
+                <div class="subtext">Idea → perfect prompt generator, multi-language support</div>
             </div>
-
-            <div id="authStatus" class="muted">Checking login...</div>
+            <div id="authStatus" class="small-muted">Checking login...</div>
         </div>
 
-        <div class="grid">
+        <div class="main-grid">
             <!-- LEFT -->
             <div class="card">
                 <h1>Prompt Builder</h1>
@@ -231,7 +234,7 @@
                 <div class="form-grid">
                     <div>
                         <label for="mode">Mode</label>
-                        <select id="mode" name="mode">
+                        <select id="mode">
                             <option>Generate Perfect Prompt</option>
                             <option>Improve Existing Prompt</option>
                         </select>
@@ -239,7 +242,7 @@
 
                     <div>
                         <label for="modelName">Model</label>
-                        <select id="modelName" name="model">
+                        <select id="modelName">
                             <option>Flux</option>
                             <option>Midjourney</option>
                             <option>Stable Diffusion</option>
@@ -250,7 +253,7 @@
 
                     <div>
                         <label for="styleName">Visual Style</label>
-                        <select id="styleName" name="style">
+                        <select id="styleName">
                             <option>Realistic</option>
                             <option>Ultra-Realistic</option>
                             <option>Animated</option>
@@ -265,7 +268,7 @@
 
                     <div>
                         <label for="outputLanguage">Output Language</label>
-                        <select id="outputLanguage" name="language">
+                        <select id="outputLanguage">
                             <option>Auto</option>
                             <option>English</option>
                             <option>Hindi</option>
@@ -287,44 +290,44 @@
                 </div>
 
                 <div class="toolbar">
-                    <button class="primary" type="button" onclick="generatePrompt()">Generate</button>
-                    <button class="secondary" type="button" onclick="savePrompt()">Save Prompt</button>
-                    <button class="secondary" type="button" onclick="copyPrompt()">Copy Prompt</button>
-                    <button class="secondary" type="button" onclick="downloadTxt()">Download TXT</button>
-                    <button class="danger" type="button" onclick="clearPrompt()">Clear</button>
+                    <button type="button" class="primary" onclick="generatePrompt()">Generate</button>
+                    <button type="button" class="secondary" onclick="savePrompt()">Save Prompt</button>
+                    <button type="button" class="secondary" onclick="copyPrompt()">Copy Prompt</button>
+                    <button type="button" class="secondary" onclick="downloadTxt()">Download TXT</button>
+                    <button type="button" class="danger" onclick="clearPrompt()">Clear</button>
                 </div>
             </div>
 
             <!-- RIGHT -->
             <div>
-                <div class="card result-section">
+                <div class="card section-gap">
                     <h2>Generated Result</h2>
                     <div id="result" class="result-box"></div>
                 </div>
 
-                <div class="card result-section">
+                <div class="card section-gap">
                     <h2>Negative Prompt</h2>
                     <div id="negativePrompt" class="result-box"></div>
                 </div>
 
                 <div class="card">
                     <h2>Image Upload → Prompt</h2>
-
                     <input type="file" id="imageFile" accept=".png,.jpg,.jpeg,.webp" />
+
                     <div class="toolbar">
-                        <button class="primary" type="button" onclick="generateFromImage()">Generate From Image</button>
-                        <button class="danger" type="button" onclick="deleteUploadedImage()">Delete Uploaded Image</button>
+                        <button type="button" class="primary" onclick="generateFromImage()">Generate From Image</button>
+                        <button type="button" class="danger" onclick="deleteUploadedImage()">Delete Uploaded Image</button>
                     </div>
+
                     <div id="imageStatus" class="status"></div>
                 </div>
             </div>
         </div>
 
-        <div class="divider"></div>
-
         <div class="auth-grid">
             <div class="card">
                 <h2>Login</h2>
+
                 <label for="loginEmail">Email</label>
                 <input type="email" id="loginEmail" placeholder="Enter email" />
 
@@ -334,8 +337,8 @@
                 <input type="password" id="loginPassword" placeholder="Enter password" />
 
                 <div class="toolbar">
-                    <button class="dark" type="button" onclick="login()">Login</button>
-                    <button class="gray" type="button" onclick="logout()">Logout</button>
+                    <button type="button" class="dark" onclick="login()">Login</button>
+                    <button type="button" class="light" onclick="logout()">Logout</button>
                 </div>
 
                 <div id="loginStatus" class="status"></div>
@@ -343,6 +346,7 @@
 
             <div class="card">
                 <h2>Signup</h2>
+
                 <label for="signupUsername">Username</label>
                 <input type="text" id="signupUsername" placeholder="Enter username" />
 
@@ -357,7 +361,7 @@
                 <input type="password" id="signupPassword" placeholder="Create password" />
 
                 <div class="toolbar">
-                    <button class="dark" type="button" onclick="signup()">Signup</button>
+                    <button type="button" class="dark" onclick="signup()">Signup</button>
                 </div>
 
                 <div id="signupStatus" class="status"></div>
@@ -368,12 +372,10 @@
 
         <div class="card">
             <h2>Saved Prompt History</h2>
-
-            <div class="search-row">
+            <div class="history-search">
                 <input type="text" id="historySearch" placeholder="Search in saved prompts..." oninput="filterHistory()" />
             </div>
-
-            <div id="historyContainer"></div>
+            <div id="historyContainer" class="small-muted">Login to see saved prompts.</div>
         </div>
     </div>
 
@@ -381,17 +383,22 @@
         let savedPrompts = [];
 
         function setText(id, value) {
-            document.getElementById(id).innerText = value || "";
+            const el = document.getElementById(id);
+            if (el) el.innerText = value || "";
         }
 
-        function getIdeaPayload() {
-            return {
-                idea: document.getElementById("idea").value,
-                mode: document.getElementById("mode").value,
-                model_name: document.getElementById("modelName").value,
-                style_name: document.getElementById("styleName").value,
-                output_language: document.getElementById("outputLanguage").value
-            };
+        function getValue(id) {
+            const el = document.getElementById(id);
+            return el ? el.value : "";
+        }
+
+        function escapeHtml(text) {
+            return String(text || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
         }
 
         async function fetchJSON(url, options = {}) {
@@ -399,29 +406,20 @@
             const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                const errorMsg =
-                    data.error ||
-                    data.result ||
-                    Request failed with status ${response.status};
-                throw new Error(errorMsg);
+                throw new Error(data.error || data.result || ("Request failed: " + response.status));
             }
 
             return data;
         }
 
-        async function checkMe() {
-            try {
-                const data = await fetchJSON("/api/me");
-                if (data.logged_in) {
-                    setText("authStatus", Logged in as ${data.user.username} (${data.user.email}));
-                    await loadSavedPrompts();
-                } else {
-                    setText("authStatus", "Not logged in");
-                    document.getElementById("historyContainer").innerHTML = "<div class='muted'>Login to see saved prompts.</div>";
-                }
-            } catch (e) {
-                setText("authStatus", "Unable to check login status");
-            }
+        function getIdeaPayload() {
+            return {
+                idea: getValue("idea"),
+                mode: getValue("mode"),
+                model_name: getValue("modelName"),
+                style_name: getValue("styleName"),
+                output_language: getValue("outputLanguage")
+            };
         }
 
         async function generatePrompt() {
@@ -431,14 +429,12 @@
 
                 const data = await fetchJSON("/api/process", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(getIdeaPayload())
                 });
 
-                document.getElementById("result").innerText = data.result || "";
-                document.getElementById("negativePrompt").innerText = data.negative_prompt || "";
+                setText("result", data.result || "");
+                setText("negativePrompt", data.negative_prompt || "");
             } catch (e) {
                 setText("result", e.message);
                 setText("negativePrompt", e.message);
@@ -448,7 +444,8 @@
         async function generateFromImage() {
             try {
                 const fileInput = document.getElementById("imageFile");
-                if (!fileInput.files[0]) {
+
+                if (!fileInput || !fileInput.files || !fileInput.files[0]) {
                     setText("imageStatus", "Please choose an image first.");
                     return;
                 }
@@ -457,9 +454,9 @@
 
                 const formData = new FormData();
                 formData.append("image", fileInput.files[0]);
-                formData.append("model_name", document.getElementById("modelName").value);
-                formData.append("style_name", document.getElementById("styleName").value);
-                formData.append("output_language", document.getElementById("outputLanguage").value);
+                formData.append("model_name", getValue("modelName"));
+                formData.append("style_name", getValue("styleName"));
+                formData.append("output_language", getValue("outputLanguage"));
 
                 const response = await fetch("/api/image-to-prompt", {
                     method: "POST",
@@ -486,7 +483,9 @@
                     method: "POST"
                 });
 
-                document.getElementById("imageFile").value = "";
+                const fileInput = document.getElementById("imageFile");
+                if (fileInput) fileInput.value = "";
+
                 setText("imageStatus", data.message || "Uploaded image deleted.");
             } catch (e) {
                 setText("imageStatus", e.message);
@@ -497,19 +496,17 @@
             try {
                 const payload = {
                     ...getIdeaPayload(),
-                    result: document.getElementById("result").innerText,
-                    negative_prompt: document.getElementById("negativePrompt").innerText
+                    result: document.getElementById("result") ? document.getElementById("result").innerText : "",
+                    negative_prompt: document.getElementById("negativePrompt") ? document.getElementById("negativePrompt").innerText : ""
                 };
 
                 const data = await fetchJSON("/api/save-prompt", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(payload)
                 });
 
-                alert(data.message || "Prompt saved.");
+                alert(data.message || "Prompt saved successfully.");
                 await loadSavedPrompts();
             } catch (e) {
                 alert(e.message);
@@ -522,36 +519,37 @@
                 savedPrompts = data.prompts || [];
                 renderHistory(savedPrompts);
             } catch (e) {
-                document.getElementById("historyContainer").innerHTML = <div class="muted">${e.message}</div>;
+                document.getElementById("historyContainer").innerHTML = <div class="small-muted">${escapeHtml(e.message)}</div>;
             }
         }
 
         function renderHistory(prompts) {
             const container = document.getElementById("historyContainer");
+            if (!container) return;
 
             if (!prompts.length) {
-                container.innerHTML = <div class="muted">No saved prompts yet.</div>;
+                container.innerHTML = <div class="small-muted">No saved prompts yet.</div>;
                 return;
             }
 
             container.innerHTML = prompts.map(item => `
                 <div class="history-item">
-                    <div class="history-head">${item.created_at}</div>
-                    <div class="history-title">${item.idea || "Untitled idea"}</div>
-                    <div><strong>Mode:</strong> ${item.mode || ""}</div>
-                    <div><strong>Model:</strong> ${item.model_name || ""}</div>
-                    <div><strong>Style:</strong> ${item.style_name || ""}</div>
-                    <div><strong>Language:</strong> ${item.output_language || ""}</div>
-                    <div style="margin-top:10px;"><strong>Prompt:</strong></div>
+                    <div class="history-date">${escapeHtml(item.created_at || "")}</div>
+                    <div><strong>Idea:</strong> ${escapeHtml(item.idea || "")}</div>
+                    <div><strong>Mode:</strong> ${escapeHtml(item.mode || "")}</div>
+                    <div><strong>Model:</strong> ${escapeHtml(item.model_name || "")}</div>
+                    <div><strong>Style:</strong> ${escapeHtml(item.style_name || "")}</div>
+                    <div><strong>Language:</strong> ${escapeHtml(item.output_language || "")}</div>
+                    <div class="history-label">Prompt:</div>
                     <div class="result-box" style="min-height:auto;">${escapeHtml(item.result || "")}</div>
-                    <div style="margin-top:10px;"><strong>Negative Prompt:</strong></div>
+                    <div class="history-label">Negative Prompt:</div>
                     <div class="result-box" style="min-height:auto;">${escapeHtml(item.negative_prompt || "")}</div>
                 </div>
             `).join("");
         }
 
         function filterHistory() {
-            const q = document.getElementById("historySearch").value.toLowerCase().trim();
+            const q = getValue("historySearch").toLowerCase().trim();
 
             const filtered = savedPrompts.filter(item => {
                 return (
@@ -565,9 +563,9 @@
         }
 
         function copyPrompt() {
-            const result = document.getElementById("result").innerText || "";
-            const negativePrompt = document.getElementById("negativePrompt").innerText || "";
-            const fullText = Generated Prompt:\n${result}\n\nNegative Prompt:\n${negativePrompt};
+            const result = document.getElementById("result") ? document.getElementById("result").innerText : "";
+            const negative = document.getElementById("negativePrompt") ? document.getElementById("negativePrompt").innerText : "";
+            const fullText = Generated Prompt:\n${result}\n\nNegative Prompt:\n${negative};
 
             navigator.clipboard.writeText(fullText)
                 .then(() => alert("Copied to clipboard"))
@@ -578,12 +576,10 @@
             try {
                 const response = await fetch("/api/download-txt", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        result: document.getElementById("result").innerText || "",
-                        negative_prompt: document.getElementById("negativePrompt").innerText || ""
+                        result: document.getElementById("result") ? document.getElementById("result").innerText : "",
+                        negative_prompt: document.getElementById("negativePrompt") ? document.getElementById("negativePrompt").innerText : ""
                     })
                 });
 
@@ -593,12 +589,14 @@
 
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
+
                 const a = document.createElement("a");
                 a.href = url;
                 a.download = "prompt_result.txt";
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
+
                 window.URL.revokeObjectURL(url);
             } catch (e) {
                 alert(e.message);
@@ -606,7 +604,9 @@
         }
 
         function clearPrompt() {
-            document.getElementById("idea").value = "";
+            const idea = document.getElementById("idea");
+            if (idea) idea.value = "";
+
             setText("result", "");
             setText("negativePrompt", "");
             setText("imageStatus", "");
@@ -616,13 +616,11 @@
             try {
                 const data = await fetchJSON("/api/signup", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        username: document.getElementById("signupUsername").value,
-                        email: document.getElementById("signupEmail").value,
-                        password: document.getElementById("signupPassword").value
+                        username: getValue("signupUsername"),
+                        email: getValue("signupEmail"),
+                        password: getValue("signupPassword")
                     })
                 });
 
@@ -637,12 +635,10 @@
             try {
                 const data = await fetchJSON("/api/login", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        email: document.getElementById("loginEmail").value,
-                        password: document.getElementById("loginPassword").value
+                        email: getValue("loginEmail"),
+                        password: getValue("loginPassword")
                     })
                 });
 
@@ -661,22 +657,31 @@
 
                 setText("loginStatus", data.message || "Logged out");
                 setText("authStatus", "Not logged in");
-                document.getElementById("historyContainer").innerHTML = "<div class='muted'>Login to see saved prompts.</div>";
+                document.getElementById("historyContainer").innerHTML = <div class="small-muted">Login to see saved prompts.</div>;
             } catch (e) {
                 setText("loginStatus", e.message);
             }
         }
 
-        function escapeHtml(text) {
-            return text
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#039;");
+        async function checkMe() {
+            try {
+                const data = await fetchJSON("/api/me");
+
+                if (data.logged_in) {
+                    setText("authStatus", Logged in as ${data.user.username} (${data.user.email}));
+                    await loadSavedPrompts();
+                } else {
+                    setText("authStatus", "Not logged in");
+                    document.getElementById("historyContainer").innerHTML = <div class="small-muted">Login to see saved prompts.</div>;
+                }
+            } catch (e) {
+                setText("authStatus", "Not logged in");
+            }
         }
 
-        checkMe();
+        document.addEventListener("DOMContentLoaded", function () {
+            checkMe();
+        });
     </script>
 </body>
 </html>
