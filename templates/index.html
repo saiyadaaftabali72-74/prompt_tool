@@ -569,7 +569,7 @@
             } catch (e) {
                 const container = document.getElementById("historyContainer");
                 if (container) {
-                    container.innerHTML = <div class="small-muted">${escapeHtml(e.message)}</div>;
+                    container.innerHTML = '<div class="small-muted">${escapeHtml(e.message)}</div>';
                 }
             }
         }
@@ -579,7 +579,7 @@
             if (!container) return;
 
             if (!prompts.length) {
-                container.innerHTML = <div class="small-muted">No saved prompts yet.</div>;
+                container.innerHTML = '<div class="small-muted">No saved prompts yet.</div>';
                 return;
             }
 
@@ -710,7 +710,7 @@
 
                 const container = document.getElementById("historyContainer");
                 if (container) {
-                    container.innerHTML = <div class="small-muted">Login to see saved prompts.</div>;
+                    container.innerHTML = '<div class="small-muted">Login to see saved prompts.</div>';
                 }
             } catch (e) {
                 setText("loginStatus", e.message);
@@ -722,20 +722,20 @@
                 const data = await fetchJSON("/api/me");
 
                 if (data.logged_in) {
-                    setText("authStatus", Logged in as ${data.user.username});
+                    setText("authStatus", 'Logged in as ${data.user.username}');
                     await loadSavedPrompts();
                 } else {
                     setText("authStatus", "Not logged in");
                     const container = document.getElementById("historyContainer");
                     if (container) {
-                        container.innerHTML = <div class="small-muted">Login to see saved prompts.</div>;
+                        container.innerHTML = '<div class="small-muted">Login to see saved prompts.</div>';
                     }
                 }
             } catch (e) {
                 setText("authStatus", "Not logged in");
                 const container = document.getElementById("historyContainer");
                 if (container) {
-                    container.innerHTML = <div class="small-muted">Login to see saved prompts.</div>;
+                    container.innerHTML = '<div class="small-muted">Login to see saved prompts.</div>';
                 }
             }
         }
