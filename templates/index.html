@@ -707,6 +707,7 @@
 
                 setText("loginStatus", data.message || "Logged out");
                 setText("authStatus", "Not logged in");
+
                 const container = document.getElementById("historyContainer");
                 if (container) {
                     container.innerHTML = <div class="small-muted">Login to see saved prompts.</div>;
@@ -732,6 +733,10 @@
                 }
             } catch (e) {
                 setText("authStatus", "Not logged in");
+                const container = document.getElementById("historyContainer");
+                if (container) {
+                    container.innerHTML = <div class="small-muted">Login to see saved prompts.</div>;
+                }
             }
         }
 
