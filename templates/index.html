@@ -209,10 +209,6 @@
             z-index: 9999;
         }
 
-        .modal-overlay.show {
-            display: flex;
-        }
-
         .modal-box {
             width: 100%;
             max-width: 1000px;
@@ -261,7 +257,7 @@
             </div>
 
             <div class="top-actions">
-                <a class="auth-link" onclick="window.openAuthModal()">Login/Signup</a>
+                <a class="auth-link" onclick="openAuthModal()">Login/Signup</a>
                 <div id="authStatus" class="small-muted">Checking login...</div>
             </div>
         </div>
@@ -329,11 +325,11 @@
                 </div>
 
                 <div class="toolbar">
-                    <button type="button" class="primary" onclick="window.generatePrompt()">Generate</button>
-                    <button type="button" class="secondary" onclick="window.savePrompt()">Save Prompt</button>
-                    <button type="button" class="secondary" onclick="window.copyPrompt()">Copy Prompt</button>
-                    <button type="button" class="secondary" onclick="window.downloadTxt()">Download TXT</button>
-                    <button type="button" class="danger" onclick="window.clearPrompt()">Clear</button>
+                    <button type="button" class="primary" onclick="generatePrompt()">Generate</button>
+                    <button type="button" class="secondary" onclick="savePrompt()">Save Prompt</button>
+                    <button type="button" class="secondary" onclick="copyPrompt()">Copy Prompt</button>
+                    <button type="button" class="secondary" onclick="downloadTxt()">Download TXT</button>
+                    <button type="button" class="danger" onclick="clearPrompt()">Clear</button>
                 </div>
             </div>
 
@@ -353,8 +349,8 @@
                     <input type="file" id="imageFile" accept=".png,.jpg,.jpeg,.webp" />
 
                     <div class="toolbar">
-                        <button type="button" class="primary" onclick="window.generateFromImage()">Generate From Image</button>
-                        <button type="button" class="danger" onclick="window.deleteUploadedImage()">Delete Uploaded Image</button>
+                        <button type="button" class="primary" onclick="generateFromImage()">Generate From Image</button>
+                        <button type="button" class="danger" onclick="deleteUploadedImage()">Delete Uploaded Image</button>
                     </div>
 
                     <div id="imageStatus" class="status"></div>
@@ -367,7 +363,7 @@
         <div class="card">
             <h2>Saved Prompt History</h2>
             <div class="history-search">
-                <input type="text" id="historySearch" placeholder="Search in saved prompts..." oninput="window.filterHistory()" />
+                <input type="text" id="historySearch" placeholder="Search in saved prompts..." oninput="filterHistory()" />
             </div>
             <div id="historyContainer" class="small-muted">Login to see saved prompts.</div>
         </div>
@@ -375,7 +371,7 @@
 
     <div id="authModal" class="modal-overlay">
         <div class="modal-box">
-            <button type="button" class="modal-close" onclick="window.closeAuthModal()">×</button>
+            <button type="button" class="modal-close" onclick="closeAuthModal()">×</button>
 
             <div class="auth-grid">
                 <div class="card">
@@ -390,8 +386,8 @@
                     <input type="password" id="loginPassword" placeholder="Enter password" />
 
                     <div class="toolbar">
-                        <button type="button" class="dark" onclick="window.login()">Login</button>
-                        <button type="button" class="light" onclick="window.logout()">Logout</button>
+                        <button type="button" class="dark" onclick="login()">Login</button>
+                        <button type="button" class="light" onclick="logout()">Logout</button>
                     </div>
 
                     <div id="loginStatus" class="status"></div>
@@ -414,7 +410,7 @@
                     <input type="password" id="signupPassword" placeholder="Create password" />
 
                     <div class="toolbar">
-                        <button type="button" class="dark" onclick="window.signup()">Signup</button>
+                        <button type="button" class="dark" onclick="signup()">Signup</button>
                     </div>
 
                     <div id="signupStatus" class="status"></div>
@@ -447,12 +443,12 @@
 
         function openAuthModal() {
             const modal = document.getElementById("authModal");
-            if (modal) modal.classList.add("show");
+            if (modal) modal.style.display = "flex";
         }
 
         function closeAuthModal() {
             const modal = document.getElementById("authModal");
-            if (modal) modal.classList.remove("show");
+            if (modal) modal.style.display = "none";
         }
 
         async function fetchJSON(url, options = {}) {
@@ -738,20 +734,6 @@
                 setText("authStatus", "Not logged in");
             }
         }
-
-        window.openAuthModal = openAuthModal;
-        window.closeAuthModal = closeAuthModal;
-        window.generatePrompt = generatePrompt;
-        window.generateFromImage = generateFromImage;
-        window.deleteUploadedImage = deleteUploadedImage;
-        window.savePrompt = savePrompt;
-        window.filterHistory = filterHistory;
-        window.copyPrompt = copyPrompt;
-        window.downloadTxt = downloadTxt;
-        window.clearPrompt = clearPrompt;
-        window.signup = signup;
-        window.login = login;
-        window.logout = logout;
 
         document.addEventListener("DOMContentLoaded", function () {
             checkMe();
