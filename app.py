@@ -123,6 +123,7 @@ LANGUAGE_HINTS = {
     "Auto": "Respond in the same language as the user's idea.",
     "English": "Respond only in English.",
     "Hindi": "Respond only in Hindi.",
+    "Hinglish": "Respond only in Hinglish.",
     "Urdu": "Respond only in Urdu.",
     "Arabic": "Respond only in Arabic.",
     "French": "Respond only in French.",
