@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Prompt Engineer Tool</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -30,7 +28,7 @@
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             gap: 12px;
             flex-wrap: wrap;
         }
@@ -44,6 +42,30 @@
             color: #6b7280;
             font-size: 14px;
             margin-top: 4px;
+        }
+
+        .top-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .auth-link {
+            color: #2563eb;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .auth-link:hover {
+            text-decoration: underline;
+        }
+
+        .small-muted {
+            font-size: 14px;
+            color: #6b7280;
         }
 
         .main-grid {
@@ -92,7 +114,7 @@
         }
 
         textarea {
-            min-height: 220px;
+            min-height: 140px; /* chhota kiya */
             resize: vertical;
         }
 
@@ -118,33 +140,14 @@
             opacity: 0.95;
         }
 
-        .primary {
-            background: #2563eb;
-            color: white;
-        }
-
-        .secondary {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .dark {
-            background: #111827;
-            color: white;
-        }
-
-        .danger {
-            background: #dc2626;
-            color: white;
-        }
-
-        .light {
-            background: #e5e7eb;
-            color: #111827;
-        }
+        .primary { background: #2563eb; color: white; }
+        .secondary { background: #3b82f6; color: white; }
+        .dark { background: #111827; color: white; }
+        .danger { background: #dc2626; color: white; }
+        .light { background: #e5e7eb; color: #111827; }
 
         .result-box {
-            min-height: 200px;
+            min-height: 180px;
             border: 1px solid #d1d5db;
             border-radius: 16px;
             padding: 16px;
@@ -171,13 +174,6 @@
             margin: 24px 0;
         }
 
-        .auth-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 24px;
-        }
-
         .history-search {
             margin-bottom: 14px;
         }
@@ -202,9 +198,48 @@
             margin-bottom: 6px;
         }
 
-        .small-muted {
-            font-size: 14px;
-            color: #6b7280;
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 9999;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            width: 100%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: #eef3ff;
+            border-radius: 24px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            right: 16px;
+            top: 12px;
+            background: transparent;
+            color: #111827;
+            font-size: 28px;
+            line-height: 1;
+            padding: 4px 10px;
+        }
+
+        .auth-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
         @media (max-width: 960px) {
@@ -223,7 +258,11 @@
                 <div class="brand">Prompt Engineer Tool</div>
                 <div class="subtext">Idea → perfect prompt generator, multi-language support</div>
             </div>
-            <div id="authStatus" class="small-muted">Checking login...</div>
+
+            <div class="top-actions">
+                <a class="auth-link" onclick="openAuthModal()">Login/Signup</a>
+                <div id="authStatus" class="small-muted">Checking login...</div>
+            </div>
         </div>
 
         <div class="main-grid">
@@ -324,50 +363,6 @@
             </div>
         </div>
 
-        <div class="auth-grid">
-            <div class="card">
-                <h2>Login</h2>
-
-                <label for="loginEmail">Email</label>
-                <input type="email" id="loginEmail" placeholder="Enter email" />
-
-                <div style="height: 12px;"></div>
-
-                <label for="loginPassword">Password</label>
-                <input type="password" id="loginPassword" placeholder="Enter password" />
-
-                <div class="toolbar">
-                    <button type="button" class="dark" onclick="login()">Login</button>
-                    <button type="button" class="light" onclick="logout()">Logout</button>
-                </div>
-
-                <div id="loginStatus" class="status"></div>
-            </div>
-
-            <div class="card">
-                <h2>Signup</h2>
-
-                <label for="signupUsername">Username</label>
-                <input type="text" id="signupUsername" placeholder="Enter username" />
-
-                <div style="height: 12px;"></div>
-
-                <label for="signupEmail">Email</label>
-                <input type="email" id="signupEmail" placeholder="Enter email" />
-
-                <div style="height: 12px;"></div>
-
-                <label for="signupPassword">Password</label>
-                <input type="password" id="signupPassword" placeholder="Create password" />
-
-                <div class="toolbar">
-                    <button type="button" class="dark" onclick="signup()">Signup</button>
-                </div>
-
-                <div id="signupStatus" class="status"></div>
-            </div>
-        </div>
-
         <div class="divider"></div>
 
         <div class="card">
@@ -376,6 +371,57 @@
                 <input type="text" id="historySearch" placeholder="Search in saved prompts..." oninput="filterHistory()" />
             </div>
             <div id="historyContainer" class="small-muted">Login to see saved prompts.</div>
+        </div>
+    </div>
+
+    <!-- AUTH MODAL -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-box">
+            <button type="button" class="modal-close" onclick="closeAuthModal()">×</button>
+
+            <div class="auth-grid">
+                <div class="card">
+                    <h2>Login</h2>
+
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter email" />
+
+                    <div style="height: 12px;"></div>
+
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter password" />
+
+                    <div class="toolbar">
+                        <button type="button" class="dark" onclick="login()">Login</button>
+                        <button type="button" class="light" onclick="logout()">Logout</button>
+                    </div>
+
+                    <div id="loginStatus" class="status"></div>
+                </div>
+
+                <div class="card">
+                    <h2>Signup</h2>
+
+                    <label for="signupUsername">Username</label>
+                    <input type="text" id="signupUsername" placeholder="Enter username" />
+
+                    <div style="height: 12px;"></div>
+
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" placeholder="Enter email" />
+
+                    <div style="height: 12px;"></div>
+
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create password" />
+
+                    <div class="toolbar">
+                        <button type="button" class="dark" onclick="signup()">Signup</button>
+                    </div>
+
+                    <div id="signupStatus" class="status"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -401,6 +447,14 @@
                 .replace(/'/g, "&#039;");
         }
 
+        function openAuthModal() {
+            document.getElementById("authModal").classList.add("show");
+        }
+
+        function closeAuthModal() {
+            document.getElementById("authModal").classList.remove("show");
+        }
+
         async function fetchJSON(url, options = {}) {
             const response = await fetch(url, options);
             const data = await response.json().catch(() => ({}));
@@ -408,7 +462,6 @@
             if (!response.ok) {
                 throw new Error(data.error || data.result || ("Request failed: " + response.status));
             }
-
             return data;
         }
 
@@ -583,9 +636,7 @@
                     })
                 });
 
-                if (!response.ok) {
-                    throw new Error("Download failed");
-                }
+                if (!response.ok) throw new Error("Download failed");
 
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
@@ -606,7 +657,6 @@
         function clearPrompt() {
             const idea = document.getElementById("idea");
             if (idea) idea.value = "";
-
             setText("result", "");
             setText("negativePrompt", "");
             setText("imageStatus", "");
@@ -626,6 +676,7 @@
 
                 setText("signupStatus", data.message || "Signup successful");
                 await checkMe();
+                closeAuthModal();
             } catch (e) {
                 setText("signupStatus", e.message);
             }
@@ -644,6 +695,7 @@
 
                 setText("loginStatus", data.message || "Login successful");
                 await checkMe();
+                closeAuthModal();
             } catch (e) {
                 setText("loginStatus", e.message);
             }
@@ -668,7 +720,7 @@
                 const data = await fetchJSON("/api/me");
 
                 if (data.logged_in) {
-                    setText("authStatus", Logged in as ${data.user.username} (${data.user.email}));
+                    setText("authStatus", Logged in as ${data.user.username});
                     await loadSavedPrompts();
                 } else {
                     setText("authStatus", "Not logged in");
