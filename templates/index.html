@@ -114,7 +114,7 @@
         }
 
         textarea {
-            min-height: 140px; /* chhota kiya */
+            min-height: 140px;
             resize: vertical;
         }
 
@@ -198,7 +198,7 @@
             margin-bottom: 6px;
         }
 
-        /* Modal */
+        /* Auth modal */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -260,13 +260,12 @@
             </div>
 
             <div class="top-actions">
-                <a class="auth-link" onclick="openAuthModal()">Login/Signup</a>
+                <a class="auth-link" id="openAuthBtn">Login/Signup</a>
                 <div id="authStatus" class="small-muted">Checking login...</div>
             </div>
         </div>
 
         <div class="main-grid">
-            <!-- LEFT -->
             <div class="card">
                 <h1>Prompt Builder</h1>
 
@@ -311,7 +310,6 @@
                             <option>Auto</option>
                             <option>English</option>
                             <option>Hindi</option>
-			    <option>Hinglish</option>
                             <option>Urdu</option>
                             <option>Arabic</option>
                             <option>French</option>
@@ -338,7 +336,6 @@
                 </div>
             </div>
 
-            <!-- RIGHT -->
             <div>
                 <div class="card section-gap">
                     <h2>Generated Result</h2>
@@ -355,8 +352,8 @@
                     <input type="file" id="imageFile" accept=".png,.jpg,.jpeg,.webp" />
 
                     <div class="toolbar">
-                        <button type="button" class="primary" onclick="generateFromImage()">Generate From Image</button>
-                        <button type="button" class="danger" onclick="deleteUploadedImage()">Delete Uploaded Image</button>
+                        <button type="button" id="generateImageBtn" class="primary">Generate From Image</button>
+                        <button type="button" id="deleteImageBtn" class="danger">Delete Uploaded Image</button>
                     </div>
 
                     <div id="imageStatus" class="status"></div>
@@ -369,16 +366,15 @@
         <div class="card">
             <h2>Saved Prompt History</h2>
             <div class="history-search">
-                <input type="text" id="historySearch" placeholder="Search in saved prompts..." oninput="filterHistory()" />
+                <input type="text" id="historySearch" placeholder="Search in saved prompts..." />
             </div>
             <div id="historyContainer" class="small-muted">Login to see saved prompts.</div>
         </div>
     </div>
 
-    <!-- AUTH MODAL -->
     <div id="authModal" class="modal-overlay">
         <div class="modal-box">
-            <button type="button" class="modal-close" onclick="closeAuthModal()">×</button>
+            <button type="button" class="modal-close" id="closeAuthBtn">×</button>
 
             <div class="auth-grid">
                 <div class="card">
@@ -393,8 +389,8 @@
                     <input type="password" id="loginPassword" placeholder="Enter password" />
 
                     <div class="toolbar">
-                        <button type="button" class="dark" onclick="login()">Login</button>
-                        <button type="button" class="light" onclick="logout()">Logout</button>
+                        <button type="button" id="loginBtn" class="dark">Login</button>
+                        <button type="button" id="logoutBtn" class="light">Logout</button>
                     </div>
 
                     <div id="loginStatus" class="status"></div>
@@ -417,7 +413,7 @@
                     <input type="password" id="signupPassword" placeholder="Create password" />
 
                     <div class="toolbar">
-                        <button type="button" class="dark" onclick="signup()">Signup</button>
+                        <button type="button" id="signupBtn" class="dark">Signup</button>
                     </div>
 
                     <div id="signupStatus" class="status"></div>
@@ -449,11 +445,13 @@
         }
 
         function openAuthModal() {
-            document.getElementById("authModal").classList.add("show");
+            const modal = document.getElementById("authModal");
+            if (modal) modal.classList.add("show");
         }
 
         function closeAuthModal() {
-            document.getElementById("authModal").classList.remove("show");
+            const modal = document.getElementById("authModal");
+            if (modal) modal.classList.remove("show");
         }
 
         async function fetchJSON(url, options = {}) {
@@ -476,13 +474,28 @@
             };
         }
 
-        function generatePrompt() {
-    alert("Button working!");
+        async function generatePrompt() {
+            try {
+                setText("result", "Working...");
+                setText("negativePrompt", "Working...");
+
+                const data = await fetchJSON("/api/process", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(getIdeaPayload())
+                });
+
+                setText("result", data.result || "");
+                setText("negativePrompt", data.negative_prompt || "");
+            } catch (e) {
+                setText("result", e.message);
+                setText("negativePrompt", e.message);
+            }
         }
+
         async function generateFromImage() {
             try {
                 const fileInput = document.getElementById("imageFile");
-
                 if (!fileInput || !fileInput.files || !fileInput.files[0]) {
                     setText("imageStatus", "Please choose an image first.");
                     return;
@@ -557,7 +570,10 @@
                 savedPrompts = data.prompts || [];
                 renderHistory(savedPrompts);
             } catch (e) {
-                document.getElementById("historyContainer").innerHTML = <div class="small-muted">${escapeHtml(e.message)}</div>;
+                const container = document.getElementById("historyContainer");
+                if (container) {
+                    container.innerHTML = <div class="small-muted">${escapeHtml(e.message)}</div>;
+                }
             }
         }
 
@@ -694,7 +710,10 @@
 
                 setText("loginStatus", data.message || "Logged out");
                 setText("authStatus", "Not logged in");
-                document.getElementById("historyContainer").innerHTML = '<div class="small-muted">Login to see saved prompts.</div>';
+                const container = document.getElementById("historyContainer");
+                if (container) {
+                    container.innerHTML = <div class="small-muted">Login to see saved prompts.</div>;
+                }
             } catch (e) {
                 setText("loginStatus", e.message);
             }
@@ -709,36 +728,43 @@
                     await loadSavedPrompts();
                 } else {
                     setText("authStatus", "Not logged in");
-                    document.getElementById("historyContainer").innerHTML = '<div class="small-muted">Login to see saved prompts.</div>';
+                    const container = document.getElementById("historyContainer");
+                    if (container) {
+                        container.innerHTML = <div class="small-muted">Login to see saved prompts.</div>;
+                    }
                 }
             } catch (e) {
                 setText("authStatus", "Not logged in");
             }
         }
 
-        <div class="toolbar">
-               <button type="button" id="generateBtn" class="primary">Generate</button>
-               <button type="button" id="saveBtn" class="secondary">Save Prompt</button>
-               <button type="button" id="copyBtn" class="secondary">Copy Prompt</button>
-               <button type="button" id="downloadBtn" class="secondary">Download TXT</button>
-               <button type="button" id="clearBtn" class="danger">Clear</button>
-        </div>
+        document.addEventListener("DOMContentLoaded", function () {
+            const bind = (id, fn) => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener("click", fn);
+            };
 
-   <script>
-              document.addEventListener("DOMContentLoaded", function () {
+            bind("openAuthBtn", openAuthModal);
+            bind("closeAuthBtn", closeAuthModal);
 
-              document.getElementById("generateBtn")?.addEventListener("click", generatePrompt);
-              document.getElementById("saveBtn")?.addEventListener("click", savePrompt);
-              document.getElementById("copyBtn")?.addEventListener("click", copyPrompt);
-              document.getElementById("downloadBtn")?.addEventListener("click", downloadTxt);
-              document.getElementById("clearBtn")?.addEventListener("click", clearPrompt);
+            bind("generateBtn", generatePrompt);
+            bind("saveBtn", savePrompt);
+            bind("copyBtn", copyPrompt);
+            bind("downloadBtn", downloadTxt);
+            bind("clearBtn", clearPrompt);
 
-              document.getElementById("loginBtn")?.addEventListener("click", login);
-              document.getElementById("logoutBtn")?.addEventListener("click", logout);
-             document.getElementById("signupBtn")?.addEventListener("click", signup);
+            bind("generateImageBtn", generateFromImage);
+            bind("deleteImageBtn", deleteUploadedImage);
 
-     checkMe();
- });
-   </script>
- </body>
+            bind("loginBtn", login);
+            bind("logoutBtn", logout);
+            bind("signupBtn", signup);
+
+            const historySearch = document.getElementById("historySearch");
+            if (historySearch) historySearch.addEventListener("input", filterHistory);
+
+            checkMe();
+        });
+    </script>
+</body>
 </html>
