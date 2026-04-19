@@ -616,7 +616,7 @@
         function copyPrompt() {
             const result = document.getElementById("result") ? document.getElementById("result").innerText : "";
             const negative = document.getElementById("negativePrompt") ? document.getElementById("negativePrompt").innerText : "";
-            const fullText = Generated Prompt:\n${result}\n\nNegative Prompt:\n${negative};
+            const fullText = 'Generated Prompt:\n${result}\n\nNegative Prompt:\n${negative}';
 
             navigator.clipboard.writeText(fullText)
                 .then(() => alert("Copied to clipboard"))
